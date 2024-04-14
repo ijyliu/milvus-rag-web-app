@@ -84,6 +84,15 @@ if collection_name not in utility.list_collections():
 # Otherwise, load the collection
 else:
     collection = Collection(name=collection_name)
+    # Check if index exists
+    if not collection.has_index():
+        # Create Euclidean L2 index
+        index_params = {
+            "metric_type": "L2",
+            "index_type": "IVF_FLAT",
+            "params": {"nlist": 128}
+        }
+        collection.create_index(field_name="embedding", index_params=index_params)
     collection.load()
 
 ##################################################################################################
