@@ -17,7 +17,6 @@ COPY . /app/
 EXPOSE 5000
 
 # Define environment variable to enable Flask's debug mode
-ENV FLASK_APP=RAG_with_Gemini_Pro.py
 ENV FLASK_ENV=development
 
 # Run app.py when the container launches

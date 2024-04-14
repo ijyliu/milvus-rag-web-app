@@ -45,14 +45,13 @@ services:
   rag_chat_app:
     container_name: rag_chat_app
     build:
-      context: ./Code/RAG
+      context: .
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
     depends_on:
       - standalone
     environment:
-      - FLASK_APP=RAG_with_Gemini_Pro.py
       - FLASK_ENV=development
     networks:
       - default
