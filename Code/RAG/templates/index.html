@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chat with Gemini Pro</title>
+<script>
+async function sendChat() {
+    let inputText = document.getElementById("inputText").value;
+    let response = await fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({input_text: inputText})
+    });
+    let data = await response.json();
+    document.getElementById("response").innerText = data.response || "No response";
+}
+</script>
+</head>
+<body>
+<input type="text" id="inputText" placeholder="Type your message...">
+<button onclick="sendChat()">Send</button>
+<p>Response: <span id="response"></span></p>
+</body>
+</html>

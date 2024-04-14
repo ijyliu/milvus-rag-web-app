@@ -4,56 +4,50 @@
 ##################################################################################################
 
 # Packages
+from flask import Flask, request, jsonify, render_template
 from RAG_Functions import *
-import time
 from sentence_transformers import SentenceTransformer
 from pymilvus import Collection, connections
-
-# Google API Setup
-print('\nConfiguring Google API...')
 import google.generativeai as genai
 import os
-# Load API key from './Google API Key/data-engineering-project.txt'
+
+# Create flask web server
+app = Flask(__name__)
+
+# Load API key
 with open(os.path.expanduser('./Google API Key/data-engineering-project.txt')) as f:
     GOOGLE_API_KEY = f.read().strip()
 genai.configure(api_key=GOOGLE_API_KEY)
 
-##################################################################################################
-
-# Embedding Model
-print('\nLoading Embedding Model...')
+# Load Embedding Model
 embedding_model = SentenceTransformer("mixedbread-ai/mxbai-embed-large-v1")
-embedding_model
 
-##################################################################################################
-
-# Chat Model
-print('\nSetting Up Chat Model...')
+# Setup Chat Model
 chat_model = genai.GenerativeModel('gemini-1.0-pro-latest')
-chat_model
 
-##################################################################################################
-
-# Milvus Connection
-print('\nConnecting to Milvus...')
-connections.connect(host='localhost', port='19530')
-collection = Collection("text_embeddings")      # Get an existing collection.
+# Connect to Milvus
+connections.connect(host='standalone', port='19530')
+collection = Collection("text_embeddings")
 collection.load()
 
-##################################################################################################
+# Decorator to get function called when user sends POST request to /chat
+@app.route('/chat', methods=['POST'])
+def chat():
+    # Load input text from json posted
+    user_input = request.json.get('input_text')
+    # Error if input is empty
+    if not user_input:
+        return jsonify({"error": "Empty input text"}), 400
+    # Get response from Gemini Pro Chat
+    response = gemini_pro_chat_response(user_input, embedding_model, chat_model, collection)
+    # Return response as json
+    return jsonify({"response": response})
 
-# Perform Chat
-print('\nBeginning Chat. Type "exit" to quit.')
+# Render the index.html front end
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# Chat Loop
-while True:
-
-    # Chat with model
-    input_text = input("\nUser: ")
-    # Exit if user types 'exit'
-    if input_text == 'exit':
-        break
-
-    # Get response from Gemini Pro
-    response_for_user = gemini_pro_chat_response(input_text, embedding_model, chat_model, collection)
-    print(response_for_user)
+# Serving the app on port 5000 when this code is run
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
