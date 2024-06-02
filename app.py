@@ -19,18 +19,21 @@ import os
 
 ##################################################################################################
 
+# Milvus setup
+
 # If collection does not already exist, load embeddings and create index
 # Otherwise, load the collection
 
 ##################################################################################################
 
+# Connect to Milvus, use service name of standalone as host and port 19530
 connections.connect("default", host="standalone", port="19530")
 collection_name = "text_embeddings"
 
 # Prepare the collection if it does not already exist
 if collection_name not in utility.list_collections():
 
-    # fields: entences, embedding, companies, and documents
+    # fields: sentences, embeddings, companies, and documents
     fields = [
         FieldSchema(name="sentence_id", dtype=DataType.INT64, is_primary=True, auto_id=True),
         # we got some long sentences in here so length for this field has to be quite long to accomodate some outliers
@@ -40,30 +43,40 @@ if collection_name not in utility.list_collections():
         FieldSchema(name="document_name", dtype=DataType.VARCHAR, max_length=64),
     ]
 
+    # Create schema
     schema = CollectionSchema(fields, description="Generated text embeddings")
 
+    # Create collection
     collection = Collection(name=collection_name, schema=schema)
 
+    # Location of the embeddings
     dir_path = './Embeddings'
 
+    # Insert the embeddings into the collection and time
     t0 = time.time()
     for path in os.listdir(dir_path):
+        # Clean names
         curr_company_name = path.split('_')[0]
         curr_document_name = path.split('_')[1].split('.')[0]
 
+        # Read the parquet file
         df = pd.read_parquet(f'{dir_path}/{path}')
 
+        # Get the sentences and embeddings
         sentences = df['sentence'].to_list()
         embeddings = df.filter(regex='^embed_element_').values.tolist()
 
+        # Fill in the company and document name with one entry per sentence
         company_names = np.full(len(sentences), curr_company_name)
         document_names = np.full(len(sentences), curr_document_name)
 
+        # Display any long names
         if len(curr_company_name) > 64:
             print(curr_company_name)
         if len(curr_document_name) > 64:
             print(curr_document_name)
         
+        # Insert the data into the collection
         mr = collection.insert(
             [
                 sentences,      # sentences
@@ -80,11 +93,12 @@ if collection_name not in utility.list_collections():
         "params": {"nlist": 128}
     }
     collection.create_index(field_name="embedding", index_params=index_params)
+    # Load the collection
     collection.load()
-# Otherwise, load the collection
+# If the collection already exists, load the collection
 else:
     collection = Collection(name=collection_name)
-    # Check if index exists
+    # Check if index exists, create if it does not
     if not collection.has_index():
         # Create Euclidean L2 index
         index_params = {
@@ -93,6 +107,7 @@ else:
             "params": {"nlist": 128}
         }
         collection.create_index(field_name="embedding", index_params=index_params)
+    # Load the collection
     collection.load()
 
 ##################################################################################################
@@ -101,7 +116,7 @@ else:
 
 ##################################################################################################
 
-# Create flask web server
+# Setting up the flask app
 app = Flask(__name__)
 
 # Load API key
@@ -115,7 +130,7 @@ embedding_model = SentenceTransformer("mixedbread-ai/mxbai-embed-large-v1")
 # Setup Chat Model
 chat_model = genai.GenerativeModel('gemini-1.0-pro-latest')
 
-# Decorator to get function called when user sends POST request to /chat
+# Decorator to get function called when POST request sent to /chat
 @app.route('/chat', methods=['POST'])
 def chat():
     # Load input text from json posted
