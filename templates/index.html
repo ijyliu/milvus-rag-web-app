@@ -1,11 +1,17 @@
 <!DOCTYPE html>
+<!-- HTML setup -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Page title -->
 <title>Chat with Gemini Pro</title>
+<!-- JavaScript code to send a chat message to the server. -->
 <script>
+// Asynchronous chat sending
 async function sendChat() {
+    // Get input text from the inputText object
     let inputText = document.getElementById("inputText").value;
+    // Get response from the server, using POST. Use chat as the endpoint. Send appropriate JSON.
     let response = await fetch('/chat', {
         method: 'POST',
         headers: {
@@ -13,14 +19,19 @@ async function sendChat() {
         },
         body: JSON.stringify({input_text: inputText})
     });
+    // Get response data as JSON
     let data = await response.json();
+    // Fill response element with the response data, or "No response" if no response.
     document.getElementById("response").innerText = data.response || "No response";
 }
 </script>
 </head>
 <body>
+<!-- Input text field for chat message -->
 <input type="text" id="inputText" placeholder="Type your message...">
+<!-- Button to send chat message -->
 <button onclick="sendChat()">Send</button>
+<!-- Display response from the server -->
 <p>Response: <span id="response"></span></p>
 </body>
 </html>
