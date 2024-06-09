@@ -11,6 +11,7 @@ import numpy as np
 import os
 import time
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 from RAG_Functions import *
 from sentence_transformers import SentenceTransformer
 from pymilvus import Collection, connections
@@ -26,8 +27,8 @@ import os
 
 ##################################################################################################
 
-# Connect to Milvus, use service name of standalone as host and port 19530
-connections.connect("default", host="standalone", port="19530")
+# Connect to Milvus
+connections.connect("default", host="localhost", port="60952")
 collection_name = "text_embeddings"
 
 # Prepare the collection if it does not already exist
@@ -118,6 +119,7 @@ else:
 
 # Setting up the flask app
 app = Flask(__name__)
+CORS(app)
 
 # Load API key
 with open(os.path.expanduser('./Google API Key/data-engineering-project.txt')) as f:
@@ -131,17 +133,17 @@ embedding_model = SentenceTransformer("mixedbread-ai/mxbai-embed-large-v1")
 chat_model = genai.GenerativeModel('gemini-1.0-pro-latest')
 
 # Decorator to get function called when POST request sent to /chat
-@app.route('/chat', methods=['POST'])
+@app.route('/data', methods=['POST'])
 def chat():
     # Load input text from json posted
-    user_input = request.json.get('input_text')
+    user_input = request.json.get('data')
     # Error if input is empty
     if not user_input:
         return jsonify({"error": "Empty input text"}), 400
-    # Get response from Gemini Pro Chat
-    response = gemini_pro_chat_response(user_input, embedding_model, chat_model, collection)
-    # Return response as json
-    return jsonify({"response": response})
+    # Get message from Gemini Pro Chat
+    message = gemini_pro_chat_response(user_input, embedding_model, chat_model, collection)
+    # Return message as json
+    return jsonify({"response": True, "message": message})
 
 # Render the index.html front end
 @app.route('/')
