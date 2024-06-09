@@ -28,7 +28,7 @@ import os
 ##################################################################################################
 
 # Connect to Milvus
-connections.connect("default", host="localhost", port="60952")
+connections.connect("default", host="localhost", port="19530")
 collection_name = "text_embeddings"
 
 # Prepare the collection if it does not already exist

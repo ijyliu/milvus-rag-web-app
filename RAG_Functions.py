@@ -102,7 +102,7 @@ def gemini_pro_chat_response(input_text, embedding_model, chat_model, collection
     chat_model_response_time = end_time - start_time
 
     # Format response for user
-    response_for_user = "Assistant: " + response.text + "\nDocuments Cited: " + ', '.join(documents_cited) + "\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
+    response_for_user = "Assistant: " + response.text + "\n\nDocuments Cited: " + ', '.join(documents_cited) + "\n\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\n\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
 
     # Return response
     return response_for_user
