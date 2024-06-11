@@ -1,22 +1,29 @@
 # app.py
 # Milvus RAG web app
-# Note: Place your Zilliz token in the Zilliz Token folder of the directory this code is in, as the contents of a file called 'milvus_rag_web_app.txt'.
-# Note: Place your Google API key in the Google API Key folder of the directory this code is in, as the contents of a file called 'data-engineering-project.txt'.
+# Note: Place your Zilliz URI in the Zilliz URI and Token folder of the directory this code is in, as the contents of a file called 'zilliz_uri.txt'.
+# Note: Place your Zilliz token in the Zilliz URI and Token folder of the directory this code is in, as the contents of a file called 'zilliz_token.txt'.
+# Note: Place your Google API key in the Google API Key folder of the directory this code is in, as the contents of a file called 'google_api_key.txt'.
 
 ##################################################################################################
 
 # Packages
-from pymilvus import Collection, MilvusClient, DataType
+from pymilvus import Collection, connections, FieldSchema, CollectionSchema, DataType, utility
 import pandas as pd
 import numpy as np
 import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
 from sentence_transformers import SentenceTransformer
-from pymilvus import Collection
 import google.generativeai as genai
 import os
+
+##################################################################################################
+
+# Local flag
+# Changes connection settings to a local Milvus instance
+local = False
 
 ##################################################################################################
 
@@ -27,35 +34,41 @@ import os
 
 ##################################################################################################
 
-# Load URI from 'Zilliz Token/milvus_rag_web_app.txt'
-with open(os.path.expanduser('./Zilliz Token/milvus_rag_web_app.txt')) as f:
+# Load URI from 'Zilliz URI and Token/zilliz_uri.txt'
+with open(os.path.expanduser('./Zilliz URI and Token/zilliz_uri.txt')) as f:
     zilliz_uri = f.read().strip()
 
-# Load token from 'Zilliz Token/milvus_rag_web_app.txt'
-with open(os.path.expanduser('./Zilliz Token/milvus_rag_web_app.txt')) as f:
+# Load token from 'Zilliz URI and Token/zilliz_token.txt'
+with open(os.path.expanduser('./Zilliz URI and Token/zilliz_token.txt')) as f:
     zilliz_token = f.read().strip()
 
-# Create a Milvus client
-client = MilvusClient(uri=zilliz_uri, token=zilliz_token)
+# Connect to Milvus
+if local:
+    connections.connect("default", host="localhost", port="19530")
+if not local:
+    connections.connect(alias="default", uri=zilliz_uri, token=zilliz_token)
 
-# Get proposed collection name
+# Set up collection name
 collection_name = "text_embeddings"
 
 # Prepare the collection if it does not already exist
-if collection_name not in client.list_collections():
+if collection_name not in utility.list_collections():
 
-    # Prepare the collection if it does not already exist
-    schema = client.create_schema(enable_dynamic_field=True, description="Generated text embeddings")
+    # fields: sentences, embeddings, companies, and documents
+    fields = [
+        FieldSchema(name="sentence_id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+        # we got some long sentences in here so length for this field has to be quite long to accomodate some outliers
+        FieldSchema(name="sentence", dtype=DataType.VARCHAR, max_length=2**15),
+        FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=1024),
+        FieldSchema(name="company_name", dtype=DataType.VARCHAR, max_length=64),
+        FieldSchema(name="document_name", dtype=DataType.VARCHAR, max_length=64),
+    ]
 
-    # Add fields
-    schema.add_field(field_name="sentence_id", dtype=DataType.INT64, is_primary=True, auto_id=False)
-    schema.add_field(field_name="sentence", dtype=DataType.VARCHAR, max_length=2**15)
-    schema.add_field(field_name="embedding", dtype=DataType.FLOAT_VECTOR, dim=1024)
-    schema.add_field(field_name="company_name", dtype=DataType.VARCHAR, max_length=64)
-    schema.add_field(field_name="document_name", dtype=DataType.VARCHAR, max_length=64)
+    # Create schema
+    schema = CollectionSchema(fields, description="Generated text embeddings")
 
-    # Create the collection
-    client.create_collection(collection_name=collection_name, schema=schema)
+    # Create collection
+    collection = Collection(name=collection_name, schema=schema)
 
     # Location of the embeddings
     dir_path = './Embeddings'
@@ -85,41 +98,31 @@ if collection_name not in client.list_collections():
             print(curr_document_name)
         
         # Insert the data into the collection
-        # Create list of dictionaries to insert
-        records_dicts = []
-        for i in range(len(sentences)):
-
-            record = [
-                {
-                    "sentence": sentences[i],
-                    "embedding": embeddings[i],
-                    "company_name": company_names[i],
-                    "document_name": document_names[i]
-                }
+        mr = collection.insert(
+            [
+                sentences,      # sentences
+                embeddings,     # embeddings
+                company_names,  # company names
+                document_names  # document names
             ]
-
-            records_dicts.append(record)
-        
-        # Insert the data
-        _ = client.insert(collection_name=collection_name, records=records_dicts)
+        )
     
     # Create Euclidean L2 index
-    # Prepare index parameters
-    index_params = client.prepare_index_params()
-    index_params.add_index(
-        metric_type="L2",
-        index_type="IVF_FLAT",
-        nlist=128
-    )
-    # Create the index
-    client.create_index(collection_name=collection_name, field_name="embedding", index_params=index_params)
+    index_params = {
+        "metric_type": "L2",
+        "index_type": "IVF_FLAT",
+        "params": {"nlist": 128}
+    }
+    collection.create_index(field_name="embedding", index_params=index_params)
 
     # Load the collection
-    client.load_collection(collection_name=collection_name)
+    collection.load()
 
 # If the collection already exists, load the collection
 else:
+
     collection = Collection(name=collection_name)
+
     # Check if index exists, create if it does not
     if not collection.has_index():
         # Create Euclidean L2 index
@@ -129,6 +132,7 @@ else:
             "params": {"nlist": 128}
         }
         collection.create_index(field_name="embedding", index_params=index_params)
+
     # Load the collection
     collection.load()
 
@@ -143,7 +147,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Load API key
-with open(os.path.expanduser('./Google API Key/data-engineering-project.txt')) as f:
+with open(os.path.expanduser('./Google API Key/google_api_key.txt')) as f:
     GOOGLE_API_KEY = f.read().strip()
 genai.configure(api_key=GOOGLE_API_KEY)
 
@@ -171,6 +175,7 @@ def chat():
 def index():
     return render_template('index.html')
 
-# Serving the app on port 5000 when this code is run
+# Serve the app with gevent
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    http_server = WSGIServer(('0.0.0.0', 8080), app)
+    http_server.serve_forever()
