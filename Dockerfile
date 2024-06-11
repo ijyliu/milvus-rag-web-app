@@ -1,7 +1,7 @@
 # Image for the Flask application
 
 # Use an official Python runtime as a parent image
-FROM python:3.12-alpine
+FROM adrianliechti/sentence-transformers:bge-base-en-v1
 
 # Install dependencies
 COPY requirements.txt /tmp/
