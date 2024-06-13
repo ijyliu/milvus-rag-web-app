@@ -3,6 +3,7 @@
 # Note: Place your Zilliz URI in the Zilliz URI and Token folder of the directory this code is in, as the contents of a file called 'zilliz_uri.txt'.
 # Note: Place your Zilliz token in the Zilliz URI and Token folder of the directory this code is in, as the contents of a file called 'zilliz_token.txt'.
 # Note: Place your Google API key in the Google API Key folder of the directory this code is in, as the contents of a file called 'google_api_key.txt'.
+# Note: PLace your Mixedbread API key in the Mixedbread API Key folder of the directory this code is in, as the contents of a file called 'mixedbread_api_key.txt'.
 
 ##################################################################################################
 
@@ -15,9 +16,9 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
-from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
 import os
+from mixedbread_ai.client import MixedbreadAI
 
 ##################################################################################################
 
@@ -146,13 +147,17 @@ else:
 app = Flask(__name__)
 CORS(app)
 
-# Load API key
+# Load Google API key
 with open(os.path.expanduser('./Google API Key/google_api_key.txt')) as f:
     GOOGLE_API_KEY = f.read().strip()
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# Load Embedding Model
-embedding_model = SentenceTransformer("mixedbread-ai/mxbai-embed-large-v1")
+# Load mixedbread API key
+with open(os.path.expanduser('./Mixedbread API Key/mixedbread_api_key.txt')) as f:
+    MIXEDBREAD_API_KEY = f.read().strip()
+
+# Setup MixedbreadAI client
+mxbai_client = MixedbreadAI(api_key=MIXEDBREAD_API_KEY)
 
 # Setup Chat Model
 chat_model = genai.GenerativeModel('gemini-1.0-pro-latest')
@@ -166,7 +171,7 @@ def chat():
     if not user_input:
         return jsonify({"error": "Empty input text"}), 400
     # Get message from Gemini Pro Chat
-    message = gemini_pro_chat_response(user_input, embedding_model, chat_model, collection)
+    message = gemini_pro_chat_response(user_input, mxbai_client, chat_model, collection)
     # Return message as json
     return jsonify({"response": True, "message": message})
 

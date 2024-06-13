@@ -7,16 +7,26 @@ import time
 
 ###################################################################################################
 
-def get_mixedbread_of_query(model, query: str):
+def get_mixedbread_of_query(mxbai_client, query: str):
     '''
     Returns mixedbread embedding for an input text. Text is appropriately formatted to be a query.
 
     Parameters:
-    - model: embedding model
+    - client: MixedbreadAI client.
     - query: str: The query to be transformed.
     '''
+    # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
-    return model.encode(transformed_query)
+    # Get embedding
+    res = mxbai_client.embeddings(
+        model='mixedbread-ai/mxbai-embed-large-v1',
+        input=[
+            transformed_query
+        ]
+    )
+    # Return embedding
+    return res.data[0].embedding
+
 
 def return_top_5_sentences(collection, query_embedding):
     '''
@@ -71,19 +81,19 @@ def return_top_5_sentences(collection, query_embedding):
     # Return sentences, filenames, and time taken
     return sentences, filenames, end_time - start_time
 
-def gemini_pro_chat_response(input_text, embedding_model, chat_model, collection):
+def gemini_pro_chat_response(input_text, mxbai_client, chat_model, collection):
     '''
     Chat with the Gemini Pro model. Returns the response of the model to the user query.
 
     Parameters:
     - input_text: str: The user query.
-    - embedding_model: The embedding model.
+    - mxbai_client: The MixedbreadAI client.
     - chat_model: The chat model.
     - collection: Milvus collection.
     '''
     
     # Get embedding of input
-    input_embedding = get_mixedbread_of_query(embedding_model, input_text)
+    input_embedding = get_mixedbread_of_query(mxbai_client, input_text)
 
     # Top5 sentences
     top5_sentences, documents_cited, milvus_query_time = return_top_5_sentences(collection, input_embedding)

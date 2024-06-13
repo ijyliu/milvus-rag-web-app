@@ -31,6 +31,7 @@ dependencies:
   - zope.interface=5.4.0=py312h2bbff1b_0
   - pip:
       - annotated-types==0.6.0
+      - anyio==4.4.0
       - argon2-cffi==23.1.0
       - argon2-cffi-bindings==21.2.0
       - azure-core==1.30.1
@@ -52,7 +53,10 @@ dependencies:
       - googleapis-common-protos==1.63.0
       - grpcio==1.60.0
       - grpcio-status==1.60.0
+      - h11==0.14.0
+      - httpcore==1.0.5
       - httplib2==0.22.0
+      - httpx==0.27.0
       - huggingface-hub==0.22.2
       - idna==3.7
       - isodate==0.6.1
@@ -62,6 +66,7 @@ dependencies:
       - markupsafe==2.1.5
       - marshmallow==3.21.1
       - minio==7.2.5
+      - mixedbread-ai==2.2.1
       - mpmath==1.3.0
       - networkx==3.3
       - numpy==1.26.4
@@ -90,12 +95,14 @@ dependencies:
       - scikit-learn==1.4.2
       - scipy==1.13.0
       - sentence-transformers==2.6.1
+      - sniffio==1.3.1
       - sympy==1.12
       - threadpoolctl==3.4.0
       - tokenizers==0.15.2
       - torch==2.2.2
       - tqdm==4.66.2
       - transformers==4.39.3
+      - types-requests==2.32.0.20240602
       - typing-extensions==4.11.0
       - tzdata==2024.1
       - ujson==5.9.0
