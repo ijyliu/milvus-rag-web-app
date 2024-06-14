@@ -15,7 +15,6 @@ def get_mixedbread_of_query(mxbai_client, query: str):
     - client: MixedbreadAI client.
     - query: str: The query to be transformed.
     '''
-    print('starting to create embedding')
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
     # Get embedding
@@ -23,7 +22,6 @@ def get_mixedbread_of_query(mxbai_client, query: str):
         model='mixedbread-ai/mxbai-embed-large-v1',
         input=transformed_query
     )
-    print('created embedding')
     # Return embedding
     return res.data[0].embedding
 
@@ -37,14 +35,11 @@ def return_top_5_sentences(collection, query_embedding):
     - query_embedding: The embedding of the query text.
     '''
 
-    print('seraching milvus')
-
     # Set search parameters
     search_params = {
-        "metric_type": "L2", # simliarity metric
+        "metric_type": "L2", # similarity metric
         "offset": 0, # the number of top-k hits to skip
-        "ignore_growing": False#, # ignore growing segments
-        #"params": {"nprobe": 10} # number of cluster units, only used for some index types
+        "ignore_growing": False # do not ignore growing segments
     }
 
     # Start timer
@@ -80,8 +75,6 @@ def return_top_5_sentences(collection, query_embedding):
     # Keep unique values
     filenames = list(set(filenames))
 
-    print('got filenames')
-
     # Return sentences, filenames, and time taken
     return sentences, filenames, end_time - start_time
 
@@ -106,8 +99,6 @@ def gemini_pro_chat_response(input_text, mxbai_client, chat_model, collection):
     prompt_lines = ["Context That May Be Helpful (You May Disregard if Not Helpful):"] + top5_sentences + ["User Query:\n" + input_text]
     prompt = "\n".join(prompt_lines)
 
-    print('sending to gemini pro')
-
     # Get response
     # Start timer
     start_time = time.time()
@@ -116,8 +107,6 @@ def gemini_pro_chat_response(input_text, mxbai_client, chat_model, collection):
     end_time = time.time()
     # Chat model response time
     chat_model_response_time = end_time - start_time
-
-    print('got from gemini pro')
 
     # Format response for user
     response_for_user = "Assistant: " + response.text + "\n\nDocuments Cited: " + ', '.join(documents_cited) + "\n\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\n\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
