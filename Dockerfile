@@ -1,11 +1,5 @@
 # Image for the Flask application
 
-# Need Ubuntu for pymilvus
-#FROM ubuntu:24.10
-
-# Install pip
-#RUN apt-get update && apt-get install -y python3-pip
-
 # pymilvus specialized image
 FROM bitnami/pymilvus:2.4.3
 
