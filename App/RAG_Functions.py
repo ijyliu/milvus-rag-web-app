@@ -20,7 +20,8 @@ def get_mixedbread_of_query(mxbai_client, query: str):
     # Get embedding
     res = mxbai_client.embeddings(
         model='mixedbread-ai/mxbai-embed-large-v1',
-        input=transformed_query
+        input=transformed_query,
+        normalized=False
     )
     # Return embedding
     return res.data[0].embedding
