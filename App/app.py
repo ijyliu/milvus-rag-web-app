@@ -65,6 +65,9 @@ if not collection.has_index():
 # Load the collection
 collection.load()
 
+# print('test entry retrieval:')
+# print(collection.query(expr='', limit=1))
+
 ##################################################################################################
 
 # Running the app
@@ -87,14 +90,30 @@ with open(os.path.expanduser('../Credentials/mixedbread_api_key.txt')) as f:
 # Setup MixedbreadAI client
 mxbai_client = MixedbreadAI(api_key=MIXEDBREAD_API_KEY)
 
+# print('Testing MixedbreadAI embeddings:')
+# res = mxbai_client.embeddings(
+#   model='mixedbread-ai/mxbai-embed-large-v1',
+#   input=[
+#     'Who is german and likes bread?',
+#     'Everybody in Germany.'
+#   ],
+#   normalized=True,
+#   encoding_format='float',
+# )
+# print(res.data[0].embedding)
+
 # Setup Chat Model
-chat_model = genai.GenerativeModel('gemini-1.0-pro-latest')
+chat_model = genai.GenerativeModel('gemini-1.0-pro')
+
+# print('Testing Gemini Pro Chat:')
+# response = chat_model.generate_content('Teach me about how an LLM works')
+# print(response.text)
 
 # Decorator to get function called when POST request sent to /chat
-@app.route('/data', methods=['POST'])
+@app.route('/chat', methods=['POST'])
 def chat():
     # Load input text from json posted
-    user_input = request.json.get('data')
+    user_input = request.json.get('chat')
     # Error if input is empty
     if not user_input:
         return jsonify({"error": "Empty input text"}), 400
@@ -112,3 +131,7 @@ def index():
 if __name__ == '__main__':
     http_server = WSGIServer(('0.0.0.0', 8080), app)
     http_server.serve_forever()
+
+# Serve the app with Flask
+# if __name__ == '__main__':
+#     app.run(host='localhost', port=8080, debug=True)

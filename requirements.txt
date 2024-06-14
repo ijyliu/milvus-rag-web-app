@@ -1,5 +1,5 @@
-milvus-lite==2.4.7
-pymilvus==2.4.3
+#milvus-lite==2.4.7
+#pymilvus==2.4.3
 pandas
 numpy
 flask==3.0.3

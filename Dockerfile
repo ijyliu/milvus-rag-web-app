@@ -1,10 +1,19 @@
 # Image for the Flask application
 
 # Need Ubuntu for pymilvus
-FROM ubuntu:24.10
+#FROM ubuntu:24.10
 
 # Install pip
-RUN apt-get update && apt-get install -y python3-pip
+#RUN apt-get update && apt-get install -y python3-pip
+
+# pymilvus specialized image
+FROM bitnami/pymilvus:2.4.3
+
+# Exit python
+RUN exit
+
+# Set working directory to root
+WORKDIR /
 
 # Install dependencies
 COPY requirements.txt /tmp/
@@ -21,4 +30,4 @@ WORKDIR /App
 
 # Run the application on port 8080
 EXPOSE 8080
-CMD ["python3", "app.py"]
+ENTRYPOINT [ "python", "app.py" ]
