@@ -1,5 +1,6 @@
 # Load_Embeddings.py
 # Fills a Milvus collection with embeddings from a directory of parquet files.
+# This file should be run from the root of the repository.
 # Put a 'Credentials' folder in the root of this repository with the following files:
 # Note: Place your Zilliz URI in a file called 'zilliz_uri.txt'.
 # Note: Place your Zilliz token in a file called 'zilliz_token.txt'.
@@ -22,19 +23,16 @@ local = False
 
 # Milvus setup
 
-# Load URI from '../Credentials/zilliz_uri.txt'
-with open(os.path.expanduser('../Credentials/zilliz_uri.txt')) as f:
+# Load URI from './Credentials/zilliz_uri.txt'
+with open(os.path.expanduser('./Credentials/zilliz_uri.txt')) as f:
     zilliz_uri = f.read().strip()
 
-# Load token from '../Credentials/zilliz_token.txt'
-with open(os.path.expanduser('../Credentials/zilliz_token.txt')) as f:
+# Load token from './Credentials/zilliz_token.txt'
+with open(os.path.expanduser('./Credentials/zilliz_token.txt')) as f:
     zilliz_token = f.read().strip()
 
-# Connect to Milvus
-if local:
-    connections.connect("default", host="localhost", port="19530")
-if not local:
-    connections.connect(alias="default", uri=zilliz_uri, token=zilliz_token)
+# Connect to Milvus offered via Zilliz
+connections.connect(alias="default", uri=zilliz_uri, token=zilliz_token)
 
 # Set up collection name
 collection_name = "text_embeddings"
@@ -60,7 +58,7 @@ schema = CollectionSchema(fields, description="Generated text embeddings")
 collection = Collection(name=collection_name, schema=schema)
 
 # Location of the embeddings
-dir_path = './Embeddings'
+dir_path = './Load Embeddings/Embeddings'
 
 # Insert the embeddings into the collection
 for path in os.listdir(dir_path):
