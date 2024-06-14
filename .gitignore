@@ -1,7 +1,5 @@
 # note: volumes gitignore not necessary since local milvus volumes and docker-compose moved out of the project, but still leaving just in case
 volumes
 # other folders
-Google API Key
+Credentials
 __pycache__
-Zilliz URI and Token
-Mixedbread API Key

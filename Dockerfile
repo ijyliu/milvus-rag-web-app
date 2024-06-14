@@ -10,9 +10,14 @@ RUN apt-get update && apt-get install -y python3-pip
 COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir --break-system-packages --requirement /tmp/requirements.txt
 
+# Copy the API credentials
+COPY ./Credentials /Credentials
+
 # Copy the application code and files
-COPY . /app
-WORKDIR /app
+COPY ./App /App
+
+# Set the working directory
+WORKDIR /App
 
 # Run the application on port 8080
 EXPOSE 8080
