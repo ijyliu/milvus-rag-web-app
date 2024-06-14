@@ -2,7 +2,9 @@
 
 A Retrieval-Augmented-Generation chatbot that draws upon the TOSDR (Terms of Service Didn't Read) corpus to answer your questions about online privacy
 
-Powered by Google Gemini and Mixedbread.ai's embedding models
+You can send individual questions to the model [here](https://milvus-rag-web-app-m5h36kllyq-uc.a.run.app).
+
+Powered by the Milvus Vector DB (Zilliz Cloud), Mixedbread.ai's embedding models, Google Gemini, and Google Cloud
 
 ## Acknowledgements
 
