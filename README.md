@@ -2,7 +2,7 @@
 
 A Retrieval-Augmented-Generation chatbot that draws upon the TOSDR (Terms of Service Didn't Read) corpus to answer your questions about online privacy and more
 
-![1718508696600](image/README/1718508696600.png)
+![1718509091955](image/README/1718509091955.png)
 
 You can send individual questions to the model [here](https://milvus-rag-web-app-m5h36kllyq-uc.a.run.app).
 
