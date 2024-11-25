@@ -103,13 +103,8 @@ def chat():
     # Return message as json
     return jsonify({"response": True, "message": message})
 
-# Render loading page
+# Render the index.html front end
 @app.route('/')
-def home():
-    return render_template('loading.html')
-
-# Redirect to index
-@app.route('/main')
 def index():
     return render_template('index.html')
 
