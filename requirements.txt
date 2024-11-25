@@ -3,7 +3,7 @@
 pandas
 numpy
 flask==3.0.3
-flask_cors==3.0.10
+flask_cors==4.0.2
 gevent==23.9.1
 google-generativeai
 mixedbread-ai==2.2.1
