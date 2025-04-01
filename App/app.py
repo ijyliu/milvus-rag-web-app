@@ -16,7 +16,7 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
 import google.generativeai as genai
-from mixedbread_ai.client import MixedbreadAI
+from mixedbread import Mixedbread
 
 ##################################################################################################
 
@@ -84,8 +84,8 @@ genai.configure(api_key=GOOGLE_API_KEY)
 with open(os.path.expanduser('../Credentials/mixedbread_api_key.txt')) as f:
     MIXEDBREAD_API_KEY = f.read().strip()
 
-# Setup MixedbreadAI client
-mxbai_client = MixedbreadAI(api_key=MIXEDBREAD_API_KEY)
+# Setup Mixedbread client
+mxbai_client = Mixedbread(api_key=MIXEDBREAD_API_KEY)
 
 # Setup Chat Model
 chat_model = genai.GenerativeModel('gemini-1.0-pro')

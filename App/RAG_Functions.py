@@ -18,9 +18,9 @@ def get_mixedbread_of_query(mxbai_client, query: str):
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
     # Get embedding
-    res = mxbai_client.embeddings(
+    res = mxbai_client.embed(
         model='mixedbread-ai/mxbai-embed-large-v1',
-        input=transformed_query,
+        input=[transformed_query],
         normalized=False
     )
     # Return embedding
