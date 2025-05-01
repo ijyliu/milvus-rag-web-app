@@ -11,4 +11,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5000
 
-CMD ["python", "Embedding_Server.py"]
+CMD ["python", "Query_Embedding_Server.py"]
