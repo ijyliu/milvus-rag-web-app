@@ -35,13 +35,5 @@ def encode_text():
     embedding = get_mixedbread_of_query(embedding_model, text)
     return jsonify({'embedding': embedding})
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    '''
-    Health check endpoint to verify if the service is running.
-    Returns a simple JSON response.
-    '''
-    return jsonify({'status': 'ok'})
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
