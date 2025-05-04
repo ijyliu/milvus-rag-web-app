@@ -7,6 +7,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
+# Real-time logging
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5000
