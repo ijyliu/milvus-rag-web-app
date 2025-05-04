@@ -175,14 +175,22 @@
             document.getElementById('userinput').value = ""
             document.getElementById('userinput').placeholder = "Wait . . ."
 
-            const response = await fetch("https://milvus-rag-web-app-m5h36kllyq-uc.a.run.app/chat", {
+            // cloud version
+            // const response = await fetch("https://milvus-rag-web-app-m5h36kllyq-uc.a.run.app/chat", {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({ chat: userinput })
+            // });
+            
+            // local debug version
+            const response = await fetch("http://localhost:8080/chat", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ chat: userinput })
-
-
             });
             let json = await response.json();
 
