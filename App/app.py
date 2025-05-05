@@ -3,7 +3,6 @@
 # Put a 'Credentials' folder in the root of this repository with the following files:
 # Note: Place your Zilliz URI in a file called 'zilliz_uri.txt'.
 # Note: Place your Zilliz token in a file called 'zilliz_token.txt'.
-# Note: Place your Google API key in a file called 'google_api_key.txt'.
 
 ##################################################################################################
 
@@ -14,7 +13,6 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
-import google.generativeai as genai
 
 ##################################################################################################
 
@@ -77,16 +75,6 @@ print('loaded collection')
 app = Flask(__name__)
 CORS(app)
 
-# Load Google API key
-with open(os.path.expanduser('../Credentials/google_api_key.txt')) as f:
-    GOOGLE_API_KEY = f.read().strip()
-genai.configure(api_key=GOOGLE_API_KEY)
-
-# Setup Chat Model
-chat_model = genai.GenerativeModel('gemini-1.0-pro')
-
-print('set up chat model')
-
 # Decorator to get function called when POST request sent to /chat
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -97,8 +85,8 @@ def chat():
     if not user_input:
         return jsonify({"error": "Empty input text"}), 400
     print('got user input')
-    # Get message from Gemini Pro Chat
-    message = gemini_pro_chat_response(user_input, chat_model, collection)
+    # Get message from gemma chat
+    message = gemma_chat_response(user_input, collection)
     # Return message as json
     return jsonify({"response": True, "message": message})
 
@@ -107,11 +95,7 @@ def chat():
 def index():
     return render_template('index.html')
 
-debug = True
 # Serve the app with gevent
 if __name__ == '__main__':
-    if debug == False:
-        http_server = WSGIServer(('0.0.0.0', 8080), app)
-        http_server.serve_forever()
-    if debug == True:
-        app.run(debug=True, host='0.0.0.0', port=8080)
+    http_server = WSGIServer(('0.0.0.0', 8080), app)
+    http_server.serve_forever()
