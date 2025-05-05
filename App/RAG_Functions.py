@@ -4,28 +4,31 @@
 
 # Packages
 import time
+import requests
 
 ###################################################################################################
 
-def get_mixedbread_of_query(mxbai_client, query: str):
+def get_mixedbread_of_query(query: str):
     '''
     Returns mixedbread embedding for an input text. Text is appropriately formatted to be a query.
 
     Parameters:
-    - client: MixedbreadAI client.
     - query: str: The query to be transformed.
     '''
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
+    print('Transformed query:', transformed_query)
     # Get embedding
-    res = mxbai_client.embeddings(
-        model='mixedbread-ai/mxbai-embed-large-v1',
-        input=transformed_query,
-        normalized=False
+    res = requests.post(
+        # /encode on Port 5000
+        url = 'http://localhost:5000/encode',
+        json = {
+            'text': transformed_query
+        }
     )
+    print(res.json())
     # Return embedding
-    return res.data[0].embedding
-
+    return res.json()['embedding']
 
 def return_top_5_sentences(collection, query_embedding):
     '''
@@ -79,19 +82,19 @@ def return_top_5_sentences(collection, query_embedding):
     # Return sentences, filenames, and time taken
     return sentences, filenames, end_time - start_time
 
-def gemini_pro_chat_response(input_text, mxbai_client, chat_model, collection):
+def gemini_pro_chat_response(input_text, chat_model, collection):
     '''
     Chat with the Gemini Pro model. Returns the response of the model to the user query.
 
     Parameters:
     - input_text: str: The user query.
-    - mxbai_client: The MixedbreadAI client.
     - chat_model: The chat model.
     - collection: Milvus collection.
     '''
     
     # Get embedding of input
-    input_embedding = get_mixedbread_of_query(mxbai_client, input_text)
+    input_embedding = get_mixedbread_of_query(input_text)
+    print('got embedding')
 
     # Top5 sentences
     top5_sentences, documents_cited, milvus_query_time = return_top_5_sentences(collection, input_embedding)

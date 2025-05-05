@@ -4,7 +4,6 @@
 # Note: Place your Zilliz URI in a file called 'zilliz_uri.txt'.
 # Note: Place your Zilliz token in a file called 'zilliz_token.txt'.
 # Note: Place your Google API key in a file called 'google_api_key.txt'.
-# Note: PLace your Mixedbread API key in a file called 'mixedbread_api_key.txt'.
 
 ##################################################################################################
 
@@ -16,7 +15,6 @@ from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
 import google.generativeai as genai
-from mixedbread_ai.client import MixedbreadAI
 
 ##################################################################################################
 
@@ -45,6 +43,8 @@ if not local:
 # Set up collection name
 collection_name = "text_embeddings"
 
+print('set up collection name')
+
 ##################################################################################################
 
 # Load the collection and create index if it does not exist
@@ -65,6 +65,8 @@ if not collection.has_index():
 # Load the collection
 collection.load()
 
+print('loaded collection')
+
 ##################################################################################################
 
 # Running the app
@@ -80,26 +82,23 @@ with open(os.path.expanduser('../Credentials/google_api_key.txt')) as f:
     GOOGLE_API_KEY = f.read().strip()
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# Load mixedbread API key
-with open(os.path.expanduser('../Credentials/mixedbread_api_key.txt')) as f:
-    MIXEDBREAD_API_KEY = f.read().strip()
-
-# Setup MixedbreadAI client
-mxbai_client = MixedbreadAI(api_key=MIXEDBREAD_API_KEY)
-
 # Setup Chat Model
 chat_model = genai.GenerativeModel('gemini-1.0-pro')
+
+print('set up chat model')
 
 # Decorator to get function called when POST request sent to /chat
 @app.route('/chat', methods=['POST'])
 def chat():
+    print('accepting user input')
     # Load input text from json posted
     user_input = request.json.get('chat')
     # Error if input is empty
     if not user_input:
         return jsonify({"error": "Empty input text"}), 400
+    print('got user input')
     # Get message from Gemini Pro Chat
-    message = gemini_pro_chat_response(user_input, mxbai_client, chat_model, collection)
+    message = gemini_pro_chat_response(user_input, chat_model, collection)
     # Return message as json
     return jsonify({"response": True, "message": message})
 
@@ -108,7 +107,11 @@ def chat():
 def index():
     return render_template('index.html')
 
+debug = True
 # Serve the app with gevent
 if __name__ == '__main__':
-    http_server = WSGIServer(('0.0.0.0', 8080), app)
-    http_server.serve_forever()
+    if debug == False:
+        http_server = WSGIServer(('0.0.0.0', 8080), app)
+        http_server.serve_forever()
+    if debug == True:
+        app.run(debug=True, host='0.0.0.0', port=8080)
