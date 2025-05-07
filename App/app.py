@@ -22,12 +22,6 @@ local = False
 
 ##################################################################################################
 
-# Set up host and port based on environment variables
-backend_host = os.environ.get("BACKEND_HOST", "localhost")  # Default to localhost for local testing outside Docker
-backend_port = int(os.environ.get("BACKEND_PORT", 8000))
-
-##################################################################################################
-
 # Milvus setup
 
 # Load URI from '.../Credentials/zilliz_uri.txt'
