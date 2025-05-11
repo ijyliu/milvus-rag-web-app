@@ -6,7 +6,7 @@ A Retrieval-Augmented-Generation chatbot that draws upon the TOSDR (Terms of Ser
 
 You can send individual questions to the model [here](http://ijyliu.github.io/milvus-rag-web-app-loading-page/loading.html).
 
-To construct this app, each sentence in the TOSDR corpus (with the company name inserted) was converted to an embedding using Mixedbread.ai's state-of-the-art embedding model, and loaded into Milvus with a Euclidean IVF Flat index (L2 distance, clustered nearest neighbor search). When the user asks a question it is encoded with the model, and the top 5 most similar vectors are fetched from Milvus. The sentences for these vectors are appended to the prompt context for the Google Gemini LLM, which draws upon the information to answer the user's query.
+To construct this app, each sentence in the TOSDR corpus (with the company name inserted) was converted to an embedding using Mixedbread.ai's state-of-the-art embedding model, and loaded into Milvus with a Euclidean IVF Flat index (L2 distance, clustered nearest neighbor search). When the user asks a question it is encoded with the model, and the top 5 most similar vectors are fetched from Milvus. The sentences for these vectors are appended to the prompt context for a deployed version of Google Gemma, which draws upon the information to answer the user's query.
 
 ## Technologies (not exhaustive!)
 
@@ -14,8 +14,7 @@ To construct this app, each sentence in the TOSDR corpus (with the company name 
 - Python
   - PyMilvus SDK
   - Flask
-  - Google Generative AI API
-  - Mixedbread.ai API
+- Ollama
 - Docker
 - Google Cloud Platform
 
