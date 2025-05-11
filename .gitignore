@@ -3,3 +3,7 @@ volumes
 # other folders
 Credentials
 __pycache__
+# any file containing "api_key" or "token" or "uri" in the name
+*api_key*
+*token*
+*uri*
