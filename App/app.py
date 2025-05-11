@@ -3,6 +3,8 @@
 # Put a 'Credentials' folder in the root of this repository with the following files:
 # Note: Place your Zilliz URI in a file called 'zilliz_uri.txt'.
 # Note: Place your Zilliz token in a file called 'zilliz_token.txt'.
+# Note: Place your Gemma service URI in a file called 'ollama_gemma_uri.txt'.
+# Note: Place your query embedding model URI in a file called 'query_embedding_model_uri.txt'.
 
 ##################################################################################################
 
@@ -42,6 +44,18 @@ if not local:
 collection_name = "text_embeddings"
 
 print('set up collection name')
+
+##################################################################################################
+
+# Gemma URI setup
+with open('../Credentials/ollama_gemma_uri.txt', 'r') as file:
+    gemma_url = file.read().strip()
+
+##################################################################################################
+
+# Query embedding model URI setup
+with open('../Credentials/query_embedding_model_uri.txt', 'r') as file:
+    query_embedding_model_url = file.read().strip()
 
 ##################################################################################################
 
@@ -86,7 +100,7 @@ def chat():
         return jsonify({"error": "Empty input text"}), 400
     print('got user input')
     # Get message from gemma chat
-    message = gemma_chat_response(user_input, collection)
+    message = gemma_chat_response(gemma_url, query_embedding_model_url, user_input, collection)
     # Return message as json
     return jsonify({"response": True, "message": message})
 
