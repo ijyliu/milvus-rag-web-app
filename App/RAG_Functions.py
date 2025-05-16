@@ -9,12 +9,13 @@ import json
 
 ###################################################################################################
 
-def get_mixedbread_of_query(query_embedding_model_url, query):
+def get_mixedbread_of_query(query_embedding_model_url, query_embedding_model_id_token, query):
     '''
     Returns mixedbread embedding for an input text. Text is appropriately formatted to be a query.
 
     Parameters:
     - query_embedding_model_url: str: The URL of the query embedding model.
+    - query_embedding_model_id_token: str: The ID token for the query embedding model.
     - query: str: The query to be transformed.
     '''
     # Required format for query
@@ -25,6 +26,10 @@ def get_mixedbread_of_query(query_embedding_model_url, query):
         url = query_embedding_model_url + '/encode', # we're accessing /encode endpoint
         json = {
             'text': transformed_query
+        },
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {query_embedding_model_id_token}' # ID token for the query embedding model
         }
     )
     print(res.json())
@@ -83,18 +88,19 @@ def return_top_5_sentences(collection, query_embedding):
     # Return sentences, filenames, and time taken
     return sentences, filenames, end_time - start_time
 
-def send_to_gemma(gemma_url, prompt):
+def send_to_gemma(gemma_url, gemma_id_token, prompt):
     '''
     Sends a prompt to the Gemma model and returns the response.
 
     Parameters:
     - gemma_url: str: The URL of the Gemma model.
+    - gemma_id_token: str: The ID token for the Gemma model.
     - prompt: str: The prompt to be sent to the model.
     '''
     
     # URL and header setup
     url = gemma_url + '/api/generate' # we're accessing /api/generate endpoint
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {gemma_id_token}'}
     data = {"model": "gemma3:1b", "prompt": prompt}
 
     # Make request
@@ -120,19 +126,21 @@ def send_to_gemma(gemma_url, prompt):
 
     return full_response
 
-def gemma_chat_response(gemma_url, query_embedding_model_url, input_text, collection):
+def gemma_chat_response(gemma_url, gemma_id_token, query_embedding_model_url, query_embedding_model_id_token, input_text, collection):
     '''
     Chat with the Gemma model. Returns the response of the model to the user query.
 
     Parameters:
     - gemma_url: str: The URL of the Gemma model.
+    - gemma_id_token: str: The ID token for the Gemma model.
     - query_embedding_model_url: str: The URL of the query embedding model.
+    - query_embedding_model_id_token: str: The ID token for the query embedding model.
     - input_text: str: The user query.
     - collection: Milvus collection.
     '''
     
     # Get embedding of input
-    input_embedding = get_mixedbread_of_query(query_embedding_model_url, input_text)
+    input_embedding = get_mixedbread_of_query(query_embedding_model_url, query_embedding_model_id_token, input_text)
     print('got embedding')
 
     # Top5 sentences
@@ -145,7 +153,7 @@ def gemma_chat_response(gemma_url, query_embedding_model_url, input_text, collec
     # Get response
     # Start timer
     start_time = time.time()
-    chat_response = send_to_gemma(gemma_url, prompt)
+    chat_response = send_to_gemma(gemma_url, gemma_id_token, prompt)
     # End timer
     end_time = time.time()
     # Chat model response time

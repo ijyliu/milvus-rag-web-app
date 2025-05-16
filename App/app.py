@@ -14,6 +14,8 @@ import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from gevent.pywsgi import WSGIServer
+import google.auth.transport.requests
+import google.oauth2.id_token
 from RAG_Functions import *
 
 ##################################################################################################
@@ -47,6 +49,11 @@ print('set up collection name')
 
 ##################################################################################################
 
+# Load google cloud service account credentials
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './Credentials/milvus-rag-web-app-service-account.json'
+
+##################################################################################################
+
 # Gemma URI setup
 with open('../Credentials/ollama_gemma_uri.txt', 'r') as file:
     gemma_url = file.read().strip()
@@ -56,6 +63,13 @@ with open('../Credentials/ollama_gemma_uri.txt', 'r') as file:
 # Query embedding model URI setup
 with open('../Credentials/query_embedding_model_uri.txt', 'r') as file:
     query_embedding_model_url = file.read().strip()
+
+##################################################################################################
+
+# Get ID tokens for google cloud services
+auth_req = google.auth.transport.requests.Request()
+gemma_id_token = google.oauth2.id_token.fetch_id_token(auth_req, audience=gemma_url)
+query_embedding_model_id_token = google.oauth2.id_token.fetch_id_token(auth_req, audience=query_embedding_model_url)
 
 ##################################################################################################
 
@@ -100,7 +114,7 @@ def chat():
         return jsonify({"error": "Empty input text"}), 400
     print('got user input')
     # Get message from gemma chat
-    message = gemma_chat_response(gemma_url, query_embedding_model_url, user_input, collection)
+    message = gemma_chat_response(gemma_url, gemma_id_token, query_embedding_model_url, query_embedding_model_id_token, user_input, collection)
     # Return message as json
     return jsonify({"response": True, "message": message})
 
