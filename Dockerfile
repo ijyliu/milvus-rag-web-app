@@ -22,6 +22,9 @@ COPY ./App /App
 # Set the working directory
 WORKDIR /App
 
+# Real-time logging
+ENV PYTHONUNBUFFERED=1
+
 # Run the application on port 8080
 EXPOSE 8080
 ENTRYPOINT [ "python", "app.py" ]
