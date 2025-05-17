@@ -50,19 +50,21 @@ print('set up collection name')
 ##################################################################################################
 
 # Load google cloud service account credentials
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './Credentials/milvus-rag-web-app-service-account.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '../Credentials/milvus-rag-web-app-service-account.json'
 
 ##################################################################################################
 
 # Gemma URI setup
 with open('../Credentials/ollama_gemma_uri.txt', 'r') as file:
-    gemma_url = file.read().strip()
+    gemma_url = file.read().strip() 
+    gemma_url = gemma_url + '/api/generate' # we're accessing /api/generate endpoint
 
 ##################################################################################################
 
 # Query embedding model URI setup
 with open('../Credentials/query_embedding_model_uri.txt', 'r') as file:
-    query_embedding_model_url = file.read().strip()
+    query_embedding_model_url = file.read().strip() 
+    query_embedding_model_url = query_embedding_model_url + '/encode' # we're accessing /encode endpoint
 
 ##################################################################################################
 

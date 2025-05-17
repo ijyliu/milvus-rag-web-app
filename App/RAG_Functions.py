@@ -20,19 +20,14 @@ def get_mixedbread_of_query(query_embedding_model_url, query_embedding_model_id_
     '''
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
-    print('Transformed query:', transformed_query)
+    data = {'text': transformed_query}
+    headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {query_embedding_model_id_token}'}
     # Get embedding
     res = requests.post(
-        url = query_embedding_model_url + '/encode', # we're accessing /encode endpoint
-        json = {
-            'text': transformed_query
-        },
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {query_embedding_model_id_token}' # ID token for the query embedding model
-        }
+        url=query_embedding_model_url,
+        headers=headers,
+        data=json.dumps(data)
     )
-    print(res.json())
     # Return embedding
     return res.json()['embedding']
 
@@ -98,14 +93,13 @@ def send_to_gemma(gemma_url, gemma_id_token, prompt):
     - prompt: str: The prompt to be sent to the model.
     '''
     
-    # URL and header setup
-    url = gemma_url + '/api/generate' # we're accessing /api/generate endpoint
+    # Data and headers setup
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {gemma_id_token}'}
     data = {"model": "gemma3:1b", "prompt": prompt}
 
     # Make request
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(data), stream=True)
+        response = requests.post(url=gemma_url, headers=headers, data=json.dumps(data), stream=True)
         response.raise_for_status()  # Raise an exception for bad status codes
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
