@@ -89,7 +89,6 @@ def chat():
     print('got user input')
     # Get message from gemma chat
     message = gemma_chat_response(user_input, collection)
-    print('got gemma chat response')
     # Return message as json
     return jsonify({"response": True, "message": message})
 

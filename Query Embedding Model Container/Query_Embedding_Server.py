@@ -19,7 +19,6 @@ def get_mixedbread_of_query(model, query: str):
     - query: str: The query to be transformed.
     '''
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
-    print('Transformed query:', transformed_query)
     return model.encode(transformed_query).tolist() # Convert to list for JSON serialization
 
 @app.route('/encode', methods=['POST'])
@@ -31,10 +30,9 @@ def encode_text():
     data = request.get_json()
     if not data or 'text' not in data:
         return jsonify({'error': 'Missing "text" in request body'}), 400
-    print('Received request to encode text:', data['text'])
+
     text = data['text']
     embedding = get_mixedbread_of_query(embedding_model, text)
-    print('Generated embedding:', embedding)
     return jsonify({'embedding': embedding})
 
 if __name__ == '__main__':

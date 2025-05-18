@@ -20,14 +20,12 @@ def get_mixedbread_of_query(query):
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
     data = {'text': transformed_query}
     headers = {'Content-Type': 'application/json'}
-    print('sending to embedding server')
     # Get embedding
     res = requests.post(
         url='http://localhost:5000/encode',
         headers=headers,
         data=json.dumps(data)
     )
-    print('got embedding')
     # Return embedding
     return res.json()['embedding']
 
@@ -97,8 +95,6 @@ def send_to_gemma(prompt):
     headers = {'Content-Type': 'application/json'}
     data = {"model": "gemma3:1b", "prompt": prompt}
 
-    print('sending to gemma')
-
     # Make request
     try:
         response = requests.post(url='http://localhost:3000/api/generate',
@@ -108,8 +104,6 @@ def send_to_gemma(prompt):
         response.raise_for_status()  # Raise an exception for bad status codes
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
-
-    print('getting response')
 
     # Convert stream to text
     full_response = ""
@@ -122,7 +116,8 @@ def send_to_gemma(prompt):
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e} - Line: {line}")
 
-    print('got full gemma response')
+    # print("Full LLM Response:")
+    # print(full_response)
 
     return full_response
 
