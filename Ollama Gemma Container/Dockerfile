@@ -7,7 +7,7 @@ ENV OLLAMA_HOST 0.0.0.0:3000
 ENV OLLAMA_MODELS /models
 
 # Reduce logging verbosity
-ENV OLLAMA_DEBUG true
+ENV OLLAMA_DEBUG false
 
 # Never unload model weights
 ENV OLLAMA_KEEP_ALIVE -1
