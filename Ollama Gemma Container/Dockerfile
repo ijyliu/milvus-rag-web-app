@@ -1,4 +1,4 @@
-FROM ollama/ollama:latest
+FROM ollama/ollama:0.7.0
 
 # Listen on all interfaces, port 3000
 ENV OLLAMA_HOST 0.0.0.0:3000

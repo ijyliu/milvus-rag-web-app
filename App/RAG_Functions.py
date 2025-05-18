@@ -20,15 +20,16 @@ def get_mixedbread_of_query(query_embedding_model_url, query_embedding_model_id_
     '''
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
-    data = {'text': transformed_query}
+    data = {"model": "mxbai-embed-large:335m", "prompt": transformed_query}
+    print('data:', data)
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {query_embedding_model_id_token}'}
+    print('headers:', headers)
     # Get embedding
     res = requests.post(
         url=query_embedding_model_url,
         headers=headers,
         data=json.dumps(data)
     )
-    # Return embedding
     return res.json()['embedding']
 
 def return_top_5_sentences(collection, query_embedding):

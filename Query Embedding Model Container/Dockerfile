@@ -1,15 +1,20 @@
-FROM python:3.9-slim-buster
+FROM ollama/ollama:0.7.0
 
-WORKDIR /app
+# Listen on all interfaces, port 5000
+ENV OLLAMA_HOST 0.0.0.0:5000
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt --no-cache-dir
+# Store model weight files in /models
+ENV OLLAMA_MODELS /models
 
-COPY . .
+# Reduce logging verbosity
+ENV OLLAMA_DEBUG false
 
-# Real-time logging
-ENV PYTHONUNBUFFERED=1
+# Never unload model weights
+ENV OLLAMA_KEEP_ALIVE -1
 
-EXPOSE 5000
+# Store the model weights in the container image
+ENV MODEL mxbai-embed-large:335m
+RUN ollama serve & sleep 5 && ollama pull $MODEL
 
-CMD ["python", "Query_Embedding_Server.py"]
+# Start Ollama
+ENTRYPOINT ["ollama", "serve"]

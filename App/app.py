@@ -64,7 +64,7 @@ with open('../Credentials/ollama_gemma_uri.txt', 'r') as file:
 # Query embedding model URI setup
 with open('../Credentials/query_embedding_model_uri.txt', 'r') as file:
     query_embedding_model_url = file.read().strip() 
-    query_embedding_model_url = query_embedding_model_url + '/encode' # we're accessing /encode endpoint
+    query_embedding_model_url = query_embedding_model_url + '/api/embeddings'
 
 ##################################################################################################
 
