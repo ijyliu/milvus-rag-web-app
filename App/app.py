@@ -120,10 +120,16 @@ def chat():
     # Return message as json
     return jsonify({"response": True, "message": message})
 
-# Render the index.html front end
+# Function to get the environment variable with a default
+def get_environment():
+    """Gets the ENVIRONMENT variable, defaulting to 'local' if not set."""
+    return os.environ.get('ENVIRONMENT', 'local')
+
+# Render the index.html front end, passing the variable
 @app.route('/')
 def index():
-    return render_template('index.html')
+    environment = get_environment()
+    return render_template('index.html', environment=environment)
 
 # Serve the app with gevent
 if __name__ == '__main__':
