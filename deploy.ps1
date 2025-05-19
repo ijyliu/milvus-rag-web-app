@@ -1,3 +1,3 @@
-docker build -t us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/milvus-rag-web-app:latest .
-docker push us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/milvus-rag-web-app:latest
-gcloud run deploy milvus-rag-web-app --image=us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/milvus-rag-web-app:latest --region=us-central1 --allow-unauthenticated --max-instances=2 --set-env-vars ENVIRONMENT=production
+gcloud run services replace cloudrun.yml --region us-central1
+# Allow unauthenticated invocations
+gcloud run services add-iam-policy-binding milvus-rag-web-app --region='us-central1' --member='allUsers' --role='roles/run.invoker' --project='milvus-rag-web-app'

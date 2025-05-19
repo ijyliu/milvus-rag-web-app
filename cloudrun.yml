@@ -1,0 +1,36 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: milvus-rag-web-app
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "2"
+    spec:
+      containers:
+        - name: main-app
+          image: us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/main-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: "ENVIRONMENT"
+              value: "production"
+        - name: query-embedding-model
+          image: us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/query-embedding-model:latest
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+            limits:
+              cpu: "2"
+              memory: 8Gi
+        - name: ollama-gemma
+          image: us-central1-docker.pkg.dev/milvus-rag-web-app/milvus-rag-web-app/ollama-gemma:latest
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+            limits:
+              cpu: "2"
+              memory: 8Gi
