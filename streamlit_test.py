@@ -1,6 +1,6 @@
 import streamlit as st
-
 from ollama import Client
+
 client = Client(
   host='http://localhost:3000',
   headers={'Content-Type': 'application/json'}
