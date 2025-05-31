@@ -9,16 +9,26 @@
 # Packages
 from pymilvus import Collection, connections
 import os
-from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS
-from gevent.pywsgi import WSGIServer
 from RAG_Functions import *
+import streamlit as st
+from ollama import Client
 
 ##################################################################################################
 
-# Local flag
-# Changes connection settings to a local Milvus instance
-local = False
+# Read environment variable "ENVIRONMENT"
+environment = os.getenv("ENVIRONMENT", "local")
+# Set up URLs for chat and embedding models based on the environment
+if environment == "local":
+    chat_model_url = "http://host.docker.internal:3000"
+    embedding_model_url = "http://host.docker.internal:5000/api/embeddings"
+elif environment == "production":
+    chat_model_url = "https://localhost:3000"
+    embedding_model_url = "https://localhost:5000/api/embeddings"
+
+##################################################################################################
+
+# Flag to change connection settings to a local Milvus instance
+local_milvus = False
 
 ##################################################################################################
 
@@ -33,9 +43,9 @@ with open(os.path.expanduser('../Credentials/zilliz_token.txt')) as f:
     zilliz_token = f.read().strip()
 
 # Connect to Milvus
-if local:
+if local_milvus:
     connections.connect("default", host="localhost", port="19530")
-if not local:
+if not local_milvus:
     connections.connect(alias="default", uri=zilliz_uri, token=zilliz_token)
 
 # Set up collection name
@@ -71,37 +81,57 @@ print('loaded collection')
 
 ##################################################################################################
 
-# Setting up the flask app
-app = Flask(__name__)
-CORS(app)
+client = Client(
+  host=chat_model_url,
+  headers={'Content-Type': 'application/json'}
+)
 
-# Decorator to get function called when POST request sent to /chat
-@app.route('/chat', methods=['POST'])
-def chat():
-    print('accepting user input')
-    # Load input text from json posted
-    user_input = request.json.get('chat')
-    # Error if input is empty
-    if not user_input:
-        return jsonify({"error": "Empty input text"}), 400
-    print('got user input')
-    # Get message from gemma chat
-    message = gemma_chat_response(user_input, collection)
-    # Return message as json
-    return jsonify({"response": True, "message": message})
+st.title("Chat with Ollama")
 
-# Function to get the environment variable with a default
-def get_environment():
-    """Gets the ENVIRONMENT variable, defaulting to 'local' if not set."""
-    return os.environ.get('ENVIRONMENT', 'local')
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ]
 
-# Render the index.html front end, passing the variable
-@app.route('/')
-def index():
-    environment = get_environment()
-    return render_template('index.html', environment=environment)
+# Display chat input
+user_input = st.chat_input("Your message:")
 
-# Serve the app with gevent
-if __name__ == '__main__':
-    http_server = WSGIServer(('0.0.0.0', 8080), app)
-    http_server.serve_forever()
+# Display existing chat history
+for message in st.session_state.messages:
+    if message["role"] != "system":
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
+
+if user_input:
+    # Display user message
+    with st.chat_message("user"):
+        st.write(user_input)
+    
+    # Run RAG to add context to the user input
+    prompt, documents_cited, milvus_query_time = construct_prompt(user_input, collection, embedding_model_url)
+
+    # Append user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # Get and display streaming response
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        completion = client.chat(
+            model="gemma3:1b",
+            messages=st.session_state.messages,
+            stream=True
+        )
+        for chunk in completion:
+            if 'message' in chunk and 'content' in chunk['message']:
+                content = chunk['message']['content']
+                full_response += content
+                message_placeholder.write(full_response + "▌")
+        message_placeholder.write(full_response)
+    
+    # # Format response for user
+    # response_for_user = "Assistant: " + chat_response + "\n\nDocuments Cited: " + ', '.join(documents_cited) + "\n\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\n\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
+
+    # Append the full response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": full_response})

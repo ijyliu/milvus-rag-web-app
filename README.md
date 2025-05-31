@@ -13,13 +13,11 @@ To construct this app, each sentence in the TOSDR corpus (with the company name 
 - Milvus Vector DB through Zilliz Cloud
 - Python
   - PyMilvus SDK
-  - Flask
 - Ollama
+- Streamlit
 - Docker
 - Google Cloud Platform
 
 ## Acknowledgements
 
 Based on [data engineering work](https://github.com/ijyliu/data-engineering-project) completed with Fangyuan Li and Robert Thompson
-
-Frontend design inspired by: [Gravtas-J/Ollama-Chat](https://github.com/Gravtas-J/Ollama-Chat)
