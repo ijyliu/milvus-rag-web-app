@@ -86,7 +86,12 @@ client = Client(
   headers={'Content-Type': 'application/json'}
 )
 
-st.title("Chat with Ollama")
+# Set page configs
+st.set_page_config(
+    page_title="Terms of Service Chatbot",
+    page_icon=":page_with_curl:",
+)
+st.title("Terms of Service Chatbot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
