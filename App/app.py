@@ -81,6 +81,7 @@ print('loaded collection')
 
 ##################################################################################################
 
+# Set up Ollama client
 client = Client(
   host=chat_model_url,
   headers={'Content-Type': 'application/json'}
@@ -106,9 +107,16 @@ user_input = st.chat_input("Your message:")
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
-            st.write(message["content"])
+            content_to_display = message["content"]
+            # If role is user, split on 'User Query:' and display items after that
+            if message["role"] == "user":
+                content_to_display = content_to_display.split('User Query:')[-1].strip()
+            # Display the content
+            st.write(content_to_display)
 
+# Receive input
 if user_input:
+
     # Display user message
     with st.chat_message("user"):
         st.write(user_input)
