@@ -168,13 +168,13 @@ if user_input:
     # Append the full response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# Allow for downloading chat history
+# Allow for downloading chat
 # Set up columns for layout
 col1, col2, col3 = st.columns([1, 1, 1])
 # Centered button
 with col2:
     st.download_button(
-        label="Download chat history",
+        label="Download chat",
         data=str(st.session_state.messages),
         file_name="messages.txt",
         on_click="ignore",
