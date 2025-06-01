@@ -91,7 +91,11 @@ st.set_page_config(
     page_title="Terms of Service Chatbot",
     page_icon=":page_with_curl:",
 )
+# Title and description
 st.title("Terms of Service Chatbot")
+st.markdown('''
+This app allows you to chat with an AI assistant about nearly 2,000 online terms of service documents. You can ask questions, and the assistant will provide answers based on the context of the documents.
+''')
 
 # Initialize chat history
 if "messages" not in st.session_state:
