@@ -93,7 +93,7 @@ def stringify_conversation_history(conversation_history):
     '''
     # Convert each message in the conversation history to a string
     conversation_history_str = "\n".join(
-        [f"{entry['role']}: {" ".join(entry['content'].split())}" for entry in conversation_history if entry['role'] != 'system']
+        [f"{entry['role']}: {" ".join(entry['content'].split())}" for entry in conversation_history if entry['role'] == 'user'] # only using user messages - this is far more efficient and seems to often be sufficient
     )
     return conversation_history_str
 
@@ -139,49 +139,49 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     ]
     example_2_input_text = "What is the best way to protect my data on iCloud?"
     example_2_rewritten_input = "What is the best way to protect my data on Apple's iCloud?"
-    # example_3_conv_history = [
-    #     {"role": "system", "content": "You are a helpful assistant."},
-    #     {"role": "user", "content": "What am I allowed to post on Facebook?"},
-    #     {"role": "assistant", "content": '''
-    #         Okay, let’s tackle that question! Here’s a breakdown of what you’re allowed to post on Facebook, based on the information you’ve provided:
+    example_3_conv_history = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What am I allowed to post on Facebook?"},
+        {"role": "assistant", "content": '''
+            Okay, let’s tackle that question! Here’s a breakdown of what you’re allowed to post on Facebook, based on the information you’ve provided:
 
-    #         Generally, you have considerable control over what you share. Facebook allows you to choose who sees your posts.
+            Generally, you have considerable control over what you share. Facebook allows you to choose who sees your posts.
 
-    #         Here’s a breakdown of what’s generally permitted:
+            Here’s a breakdown of what’s generally permitted:
 
-    #         Personal Content: You can share your thoughts, experiences, photos, videos, and updates about your life. This includes anything you want to be public.
-    #         User-Generated Content: You’re allowed to post content created by other people – like posts from friends, family, or people you follow.
-    #         However, there are some important caveats and restrictions:
+            Personal Content: You can share your thoughts, experiences, photos, videos, and updates about your life. This includes anything you want to be public.
+            User-Generated Content: You’re allowed to post content created by other people – like posts from friends, family, or people you follow.
+            However, there are some important caveats and restrictions:
 
-    #         Third-Party Rights: You agree that your content doesn’t violate the rights of any third party. This means you need to be careful about copyright, trademark, and other intellectual property laws.
-    #         Legal Reasons: Facebook has the right to remove or block content that violates the law.
-    #         In short, you can share pretty much anything you want, but be mindful of potential legal issues and the rights of others.
+            Third-Party Rights: You agree that your content doesn’t violate the rights of any third party. This means you need to be careful about copyright, trademark, and other intellectual property laws.
+            Legal Reasons: Facebook has the right to remove or block content that violates the law.
+            In short, you can share pretty much anything you want, but be mindful of potential legal issues and the rights of others.
 
-    #         To give you more specific advice, could you tell me what kind of content you're interested in? For example, are you wondering about sharing photos, videos, or just general updates?
-    #     '''
-    #     },
-    #     {"role": "user", "content": "I'm interested in what kinds of videos I'm allowed to post on Facebook."},
-    #     {"role": "assistant", "content": '''
-    #         Okay, let’s break down what’s allowed on Facebook regarding videos – based on the context you’ve provided:
+            To give you more specific advice, could you tell me what kind of content you're interested in? For example, are you wondering about sharing photos, videos, or just general updates?
+        '''
+        },
+        {"role": "user", "content": "I'm interested in what kinds of videos I'm allowed to post on Facebook."},
+        {"role": "assistant", "content": '''
+            Okay, let’s break down what’s allowed on Facebook regarding videos – based on the context you’ve provided:
 
-    #         Generally, you can post videos on Facebook, but with some restrictions. Facebook has a policy to prevent the upload of videos that violate their guidelines. Here’s a breakdown:
+            Generally, you can post videos on Facebook, but with some restrictions. Facebook has a policy to prevent the upload of videos that violate their guidelines. Here’s a breakdown:
 
-    #         Content Restrictions: You cannot post videos that are inappropriate, profane, offensive, false, disparaging, defamatory, obscene, illegal, infringing, threatening, or sexually explicit.
-    #         “Inappropriate, Profane, Vulgar, Offensive, False, Disparaging, Defamatory, Illegal, Infringing, Threatening” – These are key areas to be mindful of.
-    #         Important Clarifications:
+            Content Restrictions: You cannot post videos that are inappropriate, profane, offensive, false, disparaging, defamatory, obscene, illegal, infringing, threatening, or sexually explicit.
+            “Inappropriate, Profane, Vulgar, Offensive, False, Disparaging, Defamatory, Illegal, Infringing, Threatening” – These are key areas to be mindful of.
+            Important Clarifications:
 
-    #         “We deem, in our sole discretion” – This is a crucial phrase. Facebook has the final say on what content is prohibited. They can decide if a video violates their policy based on their own judgment.
-    #         Embedding Restrictions: If you embed a video on any website, you must keep it off that website. Think of it as a 'walled' environment.
-    #         Essentially, Facebook wants to ensure the videos you share are appropriate and don’t violate their terms of service.
+            “We deem, in our sole discretion” – This is a crucial phrase. Facebook has the final say on what content is prohibited. They can decide if a video violates their policy based on their own judgment.
+            Embedding Restrictions: If you embed a video on any website, you must keep it off that website. Think of it as a 'walled' environment.
+            Essentially, Facebook wants to ensure the videos you share are appropriate and don’t violate their terms of service.
 
-    #         To help me give you a more tailored answer, could you tell me:
+            To help me give you a more tailored answer, could you tell me:
 
-    #         Are you thinking about sharing any type of video?
-    #     '''
-    #     }
-    # ]
-    # example_3_input_text = "Clips from movies."
-    # example_3_rewritten_input = "Can I post clips from movies on Facebook?"
+            Are you thinking about sharing any type of video?
+        '''
+        }
+    ]
+    example_3_input_text = "Clips from movies."
+    example_3_rewritten_input = "Can I post clips from movies on Facebook?"
     example_4_conv_history = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Are disputes concerning Amazon kindle subject to arbitration?"},
@@ -203,10 +203,31 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     ]
     example_4_input_text = "What about for Netflix?"
     example_4_rewritten_input = "Are disputes concerning Netflix subject to arbitration?"
+    # example_5_conv_history = [
+    #     {"role": "system", "content": "You are a helpful assistant."},
+    #     {"role": "user", "content": "Does Albertsons have a human trafficking policy?"},
+    #     {"role": "assistant", "content": '''
+    #         Yes, Albertsons Companies Subsidiaries has implemented various policies and procedures to prevent slavery and human trafficking in their supply chains.
+
+    #         Specifically, they’ve asked their vendors to certify that materials incorporated into their products comply with applicable laws regarding slavery and human trafficking.
+
+    #         They’ve also put in place a more in-depth vendor assessment and approval process that includes self-verification of compliance.
+
+    #         Therefore, the answer is yes, they have a human trafficking policy.
+
+    #         To give you a more helpful response, could you clarify what you’d like to know about their policy? For example, are you interested in:
+
+    #         The specific details of their policies?
+    #         The scope of their verification process?
+    #     '''
+    #     }
+    # ]
+    # example_5_input_text = "Does Academia.edu have a policy like Albertsons?"
+    # example_5_rewritten_input = "Does Academia.edu have a human trafficking policy?"
 
     # Prepare the prompt for the chat model
     rewrite_prompt = f'''
-    Rewrite the following user input to be more suitable for an embedding model. The rewritten input should be self contained and incorporate conversation history as necessary. For example, if no company name or question topic is specified in the user input, you should add that information based on the conversation history. However, take care to preserve the meaning of the original input. Your rewritten input should be only one sentence or question.
+    Rewrite the following user input to be more suitable for an embedding model. The rewritten input should be self contained and incorporate conversation history as necessary. For example, if no company or service name or question topic is specified in the user input, you should add that information based on the conversation history. However, take care to preserve the meaning of the original input. Your rewritten input should be only one sentence or question.
 
     EXAMPLES:
 
@@ -214,13 +235,19 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     
     User input to rewrite: {example_1_input_text}
     
-    Rewritten input:{example_1_rewritten_input}
+    Rewritten input: {example_1_rewritten_input}
 
     Conversation history: {stringify_conversation_history(example_2_conv_history)}
 
     User input to rewrite: {example_2_input_text}
 
     Rewritten input: {example_2_rewritten_input}
+
+    Conversation history: {stringify_conversation_history(example_3_conv_history)}
+
+    User input to rewrite: {example_3_input_text}
+
+    Rewritten input: {example_3_rewritten_input}
 
     Conversation history: {stringify_conversation_history(example_4_conv_history)}
 
