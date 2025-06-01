@@ -227,29 +227,29 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
 
     # Prepare the prompt for the chat model
     rewrite_prompt = f'''
-    Rewrite the following user input to be more suitable for an embedding model. The rewritten input should be self contained and incorporate conversation history as necessary. For example, if no company or service name or question topic is specified in the user input, you should add that information based on the conversation history. However, take care to preserve the meaning of the original input. Your rewritten input should be only one sentence or question.
+    Rewrite the following user input to be more suitable for an embedding model. The rewritten input should be self contained and incorporate information from prior user messages as necessary. For example, if no company or service name or question topic is specified in the user input, you should add that information based on the prior user messages. However, take care to preserve the meaning of the original input. Your rewritten input should be only one sentence or question.
 
     EXAMPLES:
 
-    Conversation history: {stringify_conversation_history(example_1_conv_history)}
+    Prior user messages: {stringify_conversation_history(example_1_conv_history)}
     
     User input to rewrite: {example_1_input_text}
     
     Rewritten input: {example_1_rewritten_input}
 
-    Conversation history: {stringify_conversation_history(example_2_conv_history)}
+    Prior user messages: {stringify_conversation_history(example_2_conv_history)}
 
     User input to rewrite: {example_2_input_text}
 
     Rewritten input: {example_2_rewritten_input}
 
-    Conversation history: {stringify_conversation_history(example_3_conv_history)}
+    Prior user messages: {stringify_conversation_history(example_3_conv_history)}
 
     User input to rewrite: {example_3_input_text}
 
     Rewritten input: {example_3_rewritten_input}
 
-    Conversation history: {stringify_conversation_history(example_4_conv_history)}
+    Prior user messages: {stringify_conversation_history(example_4_conv_history)}
 
     User input to rewrite: {example_4_input_text}
 
@@ -257,7 +257,7 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     
     TASK:
 
-    Conversation history: {stringify_conversation_history(conversation_history)}
+    Prior user messages: {stringify_conversation_history(conversation_history)}
     
     User input to rewrite: {input_text}
     
