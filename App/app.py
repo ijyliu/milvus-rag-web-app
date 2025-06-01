@@ -12,6 +12,7 @@ import os
 from RAG_Functions import *
 import streamlit as st
 from ollama import Client
+import pandas as pd
 
 ##################################################################################################
 
@@ -96,6 +97,18 @@ st.title("Terms of Service Chatbot")
 st.markdown('''
 This app allows you to chat with an AI assistant about nearly 2,000 online terms of service documents. You can ask questions, and the assistant will provide answers based on the context of the documents.
             
+You can search the table below to get a sense of what documents might be drawn upon. Upon mouseover, a search button will appear on the upper left.
+''')
+
+# Pandas dataframe in doc_df.csv
+doc_df = pd.read_csv(os.path.expanduser('doc_df.csv'))
+st.dataframe(
+             data = doc_df,
+             height = 150,
+             hide_index=True
+             )
+
+st.markdown('''
 Chats do not persist between sessions, but you are welcome to print the page or download the chat history to keep a record of your conversation.
 ''')
 
@@ -106,7 +119,7 @@ if "messages" not in st.session_state:
     ]
 
 # Display chat input
-user_input = st.chat_input("Your message:")
+user_input = st.chat_input("Example: What does Apple do to protect my privacy on iCloud?")
 
 # Display existing chat history
 for message in st.session_state.messages:
