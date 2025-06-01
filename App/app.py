@@ -95,6 +95,8 @@ st.set_page_config(
 st.title("Terms of Service Chatbot")
 st.markdown('''
 This app allows you to chat with an AI assistant about nearly 2,000 online terms of service documents. You can ask questions, and the assistant will provide answers based on the context of the documents.
+            
+Chats do not persist between sessions, but you are welcome to print the page or download the chat history to keep a record of your conversation.
 ''')
 
 # Initialize chat history
@@ -165,3 +167,17 @@ if user_input:
 
     # Append the full response to chat history
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+# Allow for downloading chat history
+# Set up columns for layout
+col1, col2, col3 = st.columns([1, 1, 1])
+# Centered button
+with col2:
+    st.download_button(
+        label="Download chat history",
+        data=str(st.session_state.messages),
+        file_name="messages.txt",
+        on_click="ignore",
+        type="secondary",
+        icon=":material/download:",
+    )
