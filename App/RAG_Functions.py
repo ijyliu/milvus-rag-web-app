@@ -93,7 +93,7 @@ def stringify_conversation_history(conversation_history):
     '''
     # Convert each message in the conversation history to a string
     conversation_history_str = "\n".join(
-        [f"{entry['role']}: {" ".join(entry['content'].split())}" for entry in conversation_history if entry['role'] == 'user'] # only using user messages - this is far more efficient and seems to often be sufficient
+        [f"{entry['role']}: {' '.join(entry['content'].split())}" for entry in conversation_history if entry['role'] == 'user'] # only using user messages - this is far more efficient and seems to often be sufficient
     )
     return conversation_history_str
 
@@ -112,7 +112,7 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
 
     # Examples to use in prompt
     example_1_conv_history = [
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
         {"role": "user", "content": "What does Apple do to protect my privacy on iCloud?"},
         {"role": "assistant", "content": '''
             Okay, let's break down what Apple does to protect your privacy on iCloud. Based on the provided text, here’s a summary of their key practices:
@@ -135,12 +135,12 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     example_1_input_text = "Do they share my data with third parties?"
     example_1_rewritten_input = "Does Apple share my data with third parties?"
     example_2_conv_history = [
-        {"role": "system", "content": "You are a helpful assistant."}
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."}
     ]
     example_2_input_text = "What is the best way to protect my data on iCloud?"
     example_2_rewritten_input = "What is the best way to protect my data on Apple's iCloud?"
     example_3_conv_history = [
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
         {"role": "user", "content": "What am I allowed to post on Facebook?"},
         {"role": "assistant", "content": '''
             Okay, let’s tackle that question! Here’s a breakdown of what you’re allowed to post on Facebook, based on the information you’ve provided:
@@ -183,7 +183,7 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     example_3_input_text = "Clips from movies."
     example_3_rewritten_input = "Can I post clips from movies on Facebook?"
     example_4_conv_history = [
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
         {"role": "user", "content": "Are disputes concerning Amazon kindle subject to arbitration?"},
         {"role": "assistant", "content": '''
             Okay, let’s dive into the context of Amazon disputes and binding arbitration regarding Kindle books:
@@ -204,7 +204,7 @@ def rewrite_user_input(conversation_history, input_text, chat_model_url):
     example_4_input_text = "What about for Netflix?"
     example_4_rewritten_input = "Are disputes concerning Netflix subject to arbitration?"
     # example_5_conv_history = [
-    #     {"role": "system", "content": "You are a helpful assistant."},
+    #     {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
     #     {"role": "user", "content": "Does Albertsons have a human trafficking policy?"},
     #     {"role": "assistant", "content": '''
     #         Yes, Albertsons Companies Subsidiaries has implemented various policies and procedures to prevent slavery and human trafficking in their supply chains.
@@ -303,8 +303,8 @@ def construct_prompt(input_text, collection, embedding_model_url):
     top5_sentences, documents_cited, milvus_query_time = return_top_5_sentences(collection, input_embedding)
 
     # Construct prompt
-    prompt_lines = ["Context That May Be Helpful (You May Disregard if Not Helpful):"] + top5_sentences + ["User Query:\n" + input_text]
-    prompt = "\n".join(prompt_lines)
+    prompt_lines = ["Context:"] + top5_sentences + ["User Query:\n" + input_text]
+    constructed_prompt = "\n".join(prompt_lines)
 
     # Return prompt and metadata
-    return prompt, documents_cited, milvus_query_time
+    return constructed_prompt, documents_cited, milvus_query_time

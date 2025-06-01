@@ -11,7 +11,7 @@ st.title("Chat with Ollama")
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."}
     ]
 
 # Display chat input

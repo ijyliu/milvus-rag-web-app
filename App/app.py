@@ -16,14 +16,13 @@ from ollama import Client
 ##################################################################################################
 
 # Read environment variable "ENVIRONMENT"
-environment = os.getenv("ENVIRONMENT", "local")
-# Set up URLs for chat and embedding models based on the environment
-if environment == "local":
-    chat_model_url = "http://host.docker.internal:3000"
-    embedding_model_url = "http://host.docker.internal:5000/api/embeddings"
-elif environment == "production":
+environment = os.getenv("ENVIRONMENT", "non-production")
+if environment == "production":
     chat_model_url = "https://localhost:3000"
     embedding_model_url = "https://localhost:5000/api/embeddings"
+else:
+    chat_model_url = "http://host.docker.internal:3000"
+    embedding_model_url = "http://host.docker.internal:5000/api/embeddings"
 
 ##################################################################################################
 
@@ -97,7 +96,7 @@ st.title("Terms of Service Chatbot")
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."}
     ]
 
 # Display chat input
@@ -120,9 +119,23 @@ if user_input:
     # Display user message
     with st.chat_message("user"):
         st.write(user_input)
+
+    # Input rewriting
+    # Version of conversation history with User Query as their messages only (basically user-facing conversation history)
+    uf_conversation_history = []
+    for message in st.session_state.messages:
+        if message["role"] == "user":
+            uf_conversation_history.append({"role": "user", "content": message["content"].split('User Query:')[-1].strip()})
+        else:
+            uf_conversation_history.append({"role": message["role"], "content": message["content"]})
+    rewritten_input, _ = rewrite_user_input(uf_conversation_history, user_input, chat_model_url)
+    print('rewritten_input:', rewritten_input)
     
     # Run RAG to add context to the user input
-    prompt, documents_cited, milvus_query_time = construct_prompt(user_input, collection, embedding_model_url)
+    prompt, documents_cited, milvus_query_time = construct_prompt(rewritten_input, collection, embedding_model_url)
+    # Swap prompt back to making use of the original user input
+    prompt = prompt.split('User Query:')[0] + 'User Query: ' + user_input.strip()
+    print('prompt:', prompt)
 
     # Append user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
