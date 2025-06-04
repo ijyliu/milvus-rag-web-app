@@ -97,7 +97,7 @@ st.title("Terms of Service Chatbot")
 st.markdown('''
 This app allows you to chat with an AI assistant about nearly 2,000 online terms of service documents. You can ask questions, and the assistant will provide answers based on the context of the documents.
             
-You can search the table below to get a sense of what documents might be drawn upon. Upon mouseover, a search button will appear on the upper left.
+You can search the table below to get a sense of what documents might be drawn upon. Upon mouseover, a search button will appear on the upper right.
 ''')
 
 # Pandas dataframe in doc_df.csv
@@ -109,7 +109,7 @@ st.dataframe(
              )
 
 st.markdown('''
-Chats do not persist between sessions, but you are welcome to print the page or download the chat history to keep a record of your conversation.
+Chats do not persist between sessions, but you are welcome to print the page to keep a record of your conversation.
 ''')
 
 # Initialize chat history
@@ -173,10 +173,8 @@ if user_input:
                 content = chunk['message']['content']
                 full_response += content
                 message_placeholder.write(full_response + "▌")
-        message_placeholder.write(full_response)
-    
-    # # Format response for user
-    # response_for_user = "Assistant: " + chat_response + "\n\nDocuments Cited: " + ', '.join(documents_cited) + "\n\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\n\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
+        # Write final response with documents cited
+        message_placeholder.write(full_response + "\n\n---\n\nDocuments Cited: " + ', '.join(documents_cited))
 
     # Append the full response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    st.session_state.messages.append({"role": "assistant", "content": full_response + "\n\n---\n\nDocuments Cited: " + ', '.join(documents_cited)})
