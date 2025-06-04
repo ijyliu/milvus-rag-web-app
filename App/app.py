@@ -139,25 +139,33 @@ if user_input:
     with st.chat_message("user"):
         st.write(user_input)
 
-    # Input rewriting
-    # Version of conversation history with User Query as their messages only (basically user-facing conversation history)
-    uf_conversation_history = []
-    for message in st.session_state.messages:
-        if message["role"] == "user":
-            uf_conversation_history.append({"role": "user", "content": message["content"].split('User Query:')[-1].strip()})
-        else:
-            uf_conversation_history.append({"role": message["role"], "content": message["content"]})
-    rewritten_input, _ = rewrite_user_input(uf_conversation_history, user_input, chat_model_url)
-    print('rewritten_input:', rewritten_input)
-    
-    # Run RAG to add context to the user input
-    prompt, documents_cited, milvus_query_time = construct_prompt(rewritten_input, collection, embedding_model_url)
-    # Swap prompt back to making use of the original user input
-    prompt = prompt.split('User Query:')[0] + 'User Query: ' + user_input.strip()
-    print('prompt:', prompt)
+    # Brief loading animation
+    # Set columns for spinner
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
 
-    # Append user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
+        # Spinner with text
+        with st.spinner("Rewriting user input and running retrieval..."):
+
+            # Input rewriting
+            # Version of conversation history with User Query as their messages only (basically user-facing conversation history)
+            uf_conversation_history = []
+            for message in st.session_state.messages:
+                if message["role"] == "user":
+                    uf_conversation_history.append({"role": "user", "content": message["content"].split('User Query:')[-1].strip()})
+                else:
+                    uf_conversation_history.append({"role": message["role"], "content": message["content"]})
+            rewritten_input, _ = rewrite_user_input(uf_conversation_history, user_input, chat_model_url)
+            print('rewritten_input:', rewritten_input)
+            
+            # Run RAG to add context to the user input
+            prompt, documents_cited, milvus_query_time = construct_prompt(rewritten_input, collection, embedding_model_url)
+            # Swap prompt back to making use of the original user input
+            prompt = prompt.split('User Query:')[0] + 'User Query: ' + user_input.strip()
+            print('prompt:', prompt)
+
+            # Append user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
     
     # Get and display streaming response
     with st.chat_message("assistant"):
