@@ -169,18 +169,29 @@ if user_input:
     
     # Get and display streaming response
     with st.chat_message("assistant"):
+
+        # Display a placeholder for the message
         message_placeholder = st.empty()
+
+        # Initialize full response
         full_response = ""
+        
+        # Set up completion streaming
         completion = client.chat(
             model="gemma3:1b",
             messages=st.session_state.messages,
             stream=True
         )
+
+        # Chunk streaming
         for chunk in completion:
+
+            # Writing streaming message content
             if 'message' in chunk and 'content' in chunk['message']:
                 content = chunk['message']['content']
                 full_response += content
                 message_placeholder.write(full_response + "▌")
+
         # Write final response with documents cited
         message_placeholder.write(full_response + "\n\n---\n\nDocuments Cited: " + ', '.join(documents_cited))
 
