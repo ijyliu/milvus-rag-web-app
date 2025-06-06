@@ -13,6 +13,8 @@ To construct this app, each sentence in the TOSDR corpus (with the company name 
 - Milvus Vector DB through Zilliz Cloud
 - Python
   - PyMilvus SDK
+  - Streamlit
+  - Flask (no longer used)
 - Ollama
 - Docker
 - Google Cloud Platform
