@@ -16,6 +16,7 @@ To construct this app, each sentence in the TOSDR corpus (with the company name 
   - Streamlit
   - Flask (no longer used)
 - Ollama
+- Streamlit
 - Docker
 - Google Cloud Platform
 

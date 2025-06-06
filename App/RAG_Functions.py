@@ -9,12 +9,13 @@ import json
 
 ###################################################################################################
 
-def get_mixedbread_of_query(query):
+def get_mixedbread_of_query(query, embedding_model_url):
     '''
     Returns mixedbread embedding for an input text. Text is appropriately formatted to be a query.
 
     Parameters:
     - query: str: The query to be transformed.
+    - embedding_model_url: str: The URL of the embedding model API.
     '''
     # Required format for query
     transformed_query = f'Represent this sentence for searching relevant passages: {query}'
@@ -24,7 +25,7 @@ def get_mixedbread_of_query(query):
             "prompt": transformed_query}
     # Get embedding
     res = requests.post(
-        url='http://localhost:5000/api/embeddings',
+        url=embedding_model_url,
         headers=headers,
         data=json.dumps(data)
     )
@@ -83,31 +84,194 @@ def return_top_5_sentences(collection, query_embedding):
     # Return sentences, filenames, and time taken
     return sentences, filenames, end_time - start_time
 
-def send_to_gemma(prompt):
+def stringify_conversation_history(conversation_history):
     '''
-    Sends a prompt to the Gemma model and returns the response.
+    Converts the conversation history into a string format suitable for use in prompts.
 
     Parameters:
-    - prompt: str: The prompt to be sent to the model.
+    - conversation_history: list: The conversation history to be converted.
+    '''
+    # Convert each message in the conversation history to a string
+    conversation_history_str = "\n".join(
+        [f"{entry['role']}: {' '.join(entry['content'].split())}" for entry in conversation_history if entry['role'] == 'user'] # only using user messages - this is far more efficient and seems to often be sufficient
+    )
+    return conversation_history_str
+
+def rewrite_user_input(conversation_history, input_text, chat_model_url):
+    '''
+    Rewrites the user's query or input to be more suitable for the embedding model.
+
+    Parameters:
+    - conversation_history: list: The conversation history to provide context.
+    - input_text: str: The user's query.
+    - chat_model_url: str: The URL of the chat model API.
     '''
 
-    print('sending to gemma')
+    # Generate endpoint URL for the chat model
+    generate_endpoint = chat_model_url + '/api/generate'
+
+    # Examples to use in prompt
+    example_1_conv_history = [
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
+        {"role": "user", "content": "What does Apple do to protect my privacy on iCloud?"},
+        {"role": "assistant", "content": '''
+            Okay, let's break down what Apple does to protect your privacy on iCloud. Based on the provided text, here’s a summary of their key practices:
+
+            Apple employs several measures to protect your privacy on iCloud:
+
+            End-to-End Encryption: They use this to protect sensitive information – meaning only you have the key to decrypt your data.
+            Account Security: They’re committed to safeguarding your account itself.
+            Data Security: They prioritize data security across all their systems.
+            Responsible Data Handling: Apple believes strong privacy is linked to strong security.
+            Essentially, Apple uses a multi-layered approach to minimize the risk of data breaches and unauthorized access.
+
+            Do you want me to elaborate on any of these points, or perhaps answer a follow-up question about their privacy practices? For example, would you like me to:
+
+            Explain end-to-end encryption in more detail?
+            Discuss how they handle account security?
+        '''
+        }
+    ]
+    example_1_input_text = "Do they share my data with third parties?"
+    example_1_rewritten_input = "Does Apple share my data with third parties?"
+    example_2_conv_history = [
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."}
+    ]
+    example_2_input_text = "What is the best way to protect my data on iCloud?"
+    example_2_rewritten_input = "What is the best way to protect my data on Apple's iCloud?"
+    example_3_conv_history = [
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
+        {"role": "user", "content": "What am I allowed to post on Facebook?"},
+        {"role": "assistant", "content": '''
+            Okay, let’s tackle that question! Here’s a breakdown of what you’re allowed to post on Facebook, based on the information you’ve provided:
+
+            Generally, you have considerable control over what you share. Facebook allows you to choose who sees your posts.
+
+            Here’s a breakdown of what’s generally permitted:
+
+            Personal Content: You can share your thoughts, experiences, photos, videos, and updates about your life. This includes anything you want to be public.
+            User-Generated Content: You’re allowed to post content created by other people – like posts from friends, family, or people you follow.
+            However, there are some important caveats and restrictions:
+
+            Third-Party Rights: You agree that your content doesn’t violate the rights of any third party. This means you need to be careful about copyright, trademark, and other intellectual property laws.
+            Legal Reasons: Facebook has the right to remove or block content that violates the law.
+            In short, you can share pretty much anything you want, but be mindful of potential legal issues and the rights of others.
+
+            To give you more specific advice, could you tell me what kind of content you're interested in? For example, are you wondering about sharing photos, videos, or just general updates?
+        '''
+        },
+        {"role": "user", "content": "I'm interested in what kinds of videos I'm allowed to post on Facebook."},
+        {"role": "assistant", "content": '''
+            Okay, let’s break down what’s allowed on Facebook regarding videos – based on the context you’ve provided:
+
+            Generally, you can post videos on Facebook, but with some restrictions. Facebook has a policy to prevent the upload of videos that violate their guidelines. Here’s a breakdown:
+
+            Content Restrictions: You cannot post videos that are inappropriate, profane, offensive, false, disparaging, defamatory, obscene, illegal, infringing, threatening, or sexually explicit.
+            “Inappropriate, Profane, Vulgar, Offensive, False, Disparaging, Defamatory, Illegal, Infringing, Threatening” – These are key areas to be mindful of.
+            Important Clarifications:
+
+            “We deem, in our sole discretion” – This is a crucial phrase. Facebook has the final say on what content is prohibited. They can decide if a video violates their policy based on their own judgment.
+            Embedding Restrictions: If you embed a video on any website, you must keep it off that website. Think of it as a 'walled' environment.
+            Essentially, Facebook wants to ensure the videos you share are appropriate and don’t violate their terms of service.
+
+            To help me give you a more tailored answer, could you tell me:
+
+            Are you thinking about sharing any type of video?
+        '''
+        }
+    ]
+    example_3_input_text = "Clips from movies."
+    example_3_rewritten_input = "Can I post clips from movies on Facebook?"
+    example_4_conv_history = [
+        {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
+        {"role": "user", "content": "Are disputes concerning Amazon kindle subject to arbitration?"},
+        {"role": "assistant", "content": '''
+            Okay, let’s dive into the context of Amazon disputes and binding arbitration regarding Kindle books:
+
+            Yes, disputes concerning Amazon Kindle books are subject to binding arbitration.
+
+            Here’s a breakdown based on the provided context:
+
+            4.5 Disputes / Binding Arbitration: This is a significant indicator. It means that Amazon has established a process for resolving disputes with Kindle users.
+            5.5 Disputes / Binding Arbitration: This reinforces the established process.
+            4.4 Disputes / Binding Arbitration: This further confirms the established process.
+            In short, Amazon uses binding arbitration to handle disputes with Kindle users.
+
+            Do you have any other questions about this process or Amazon’s dispute resolution?
+        '''
+        }
+    ]
+    example_4_input_text = "What about for Netflix?"
+    example_4_rewritten_input = "Are disputes concerning Netflix subject to arbitration?"
+    # example_5_conv_history = [
+    #     {"role": "system", "content": "You are an expert assistant that converses with users concerning online terms of service documents. You are able to draw on context of specific sentences retrieved from these documents in your responses. You may disregard some or all of the context if it is not helpful. Please note the user does provide you with the context or know what it says - it has just been attached to their query."},
+    #     {"role": "user", "content": "Does Albertsons have a human trafficking policy?"},
+    #     {"role": "assistant", "content": '''
+    #         Yes, Albertsons Companies Subsidiaries has implemented various policies and procedures to prevent slavery and human trafficking in their supply chains.
+
+    #         Specifically, they’ve asked their vendors to certify that materials incorporated into their products comply with applicable laws regarding slavery and human trafficking.
+
+    #         They’ve also put in place a more in-depth vendor assessment and approval process that includes self-verification of compliance.
+
+    #         Therefore, the answer is yes, they have a human trafficking policy.
+
+    #         To give you a more helpful response, could you clarify what you’d like to know about their policy? For example, are you interested in:
+
+    #         The specific details of their policies?
+    #         The scope of their verification process?
+    #     '''
+    #     }
+    # ]
+    # example_5_input_text = "Does Academia.edu have a policy like Albertsons?"
+    # example_5_rewritten_input = "Does Academia.edu have a human trafficking policy?"
+
+    # Prepare the prompt for the chat model
+    rewrite_prompt = f'''
+    Rewrite the following user input to be more suitable for an embedding model. The rewritten input should be self contained and incorporate information from prior user messages as necessary. For example, if no company or service name or question topic is specified in the user input, you should add that information based on the prior user messages. However, take care to preserve the meaning of the original input. Your rewritten input should be only one sentence or question.
+
+    EXAMPLES:
+
+    Prior user messages: {stringify_conversation_history(example_1_conv_history)}
     
-    # Data and headers setup
-    headers = {'Content-Type': 'application/json'}
-    data = {"model": "gemma3:1b", "prompt": prompt}
+    User input to rewrite: {example_1_input_text}
+    
+    Rewritten input: {example_1_rewritten_input}
 
+    Prior user messages: {stringify_conversation_history(example_2_conv_history)}
+
+    User input to rewrite: {example_2_input_text}
+
+    Rewritten input: {example_2_rewritten_input}
+
+    Prior user messages: {stringify_conversation_history(example_3_conv_history)}
+
+    User input to rewrite: {example_3_input_text}
+
+    Rewritten input: {example_3_rewritten_input}
+
+    Prior user messages: {stringify_conversation_history(example_4_conv_history)}
+
+    User input to rewrite: {example_4_input_text}
+
+    Rewritten input: {example_4_rewritten_input}
+    
+    TASK:
+
+    Prior user messages: {stringify_conversation_history(conversation_history)}
+    
+    User input to rewrite: {input_text}
+    
+    Rewritten input: '''
+
+    # Set data for the request
+    data = {'model': "gemma3:1b", 
+            'prompt': rewrite_prompt}
+    
     # Make request
-    try:
-        response = requests.post(url='http://localhost:3000/api/generate',
-                                 headers=headers, 
-                                 data=json.dumps(data), 
-                                 stream=True)
-        response.raise_for_status()  # Raise an exception for bad status codes
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+    response = requests.post(url=generate_endpoint,
+                                data=json.dumps(data))
 
-    # Convert stream to text
+    # Get response by iterating
     full_response = ""
     for line in response.iter_lines(decode_unicode=True):
         if line:
@@ -117,43 +281,30 @@ def send_to_gemma(prompt):
                     full_response += json_data["response"]
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e} - Line: {line}")
+    
+    # Return the rewritten input
+    return full_response.strip(), rewrite_prompt
 
-    # print("Full LLM Response:")
-    # print(full_response)
-
-    return full_response
-
-def gemma_chat_response(input_text, collection):
+def construct_prompt(input_text, collection, embedding_model_url):
     '''
-    Chat with the Gemma model. Returns the response of the model to the user query.
+    Constructs a prompt for the Gemma model based on the user input and the top 5 sentences from the Milvus collection.
 
     Parameters:
     - input_text: str: The user query.
     - collection: Milvus collection.
+    - embedding_model_url: str: The URL of the embedding model API.
     '''
     
     # Get embedding of input
-    input_embedding = get_mixedbread_of_query(input_text)
+    input_embedding = get_mixedbread_of_query(input_text, embedding_model_url)
     print('got embedding')
 
     # Top5 sentences
     top5_sentences, documents_cited, milvus_query_time = return_top_5_sentences(collection, input_embedding)
 
     # Construct prompt
-    prompt_lines = ["Context That May Be Helpful (You May Disregard if Not Helpful):"] + top5_sentences + ["User Query:\n" + input_text]
-    prompt = "\n".join(prompt_lines)
+    prompt_lines = ["Context:"] + top5_sentences + ["User Query:\n" + input_text]
+    constructed_prompt = "\n".join(prompt_lines)
 
-    # Get response
-    # Start timer
-    start_time = time.time()
-    chat_response = send_to_gemma(prompt)
-    # End timer
-    end_time = time.time()
-    # Chat model response time
-    chat_model_response_time = end_time - start_time
-
-    # Format response for user
-    response_for_user = "Assistant: " + chat_response + "\n\nDocuments Cited: " + ', '.join(documents_cited) + "\n\nMilvus Query Time: " + str(round(milvus_query_time, 2)) + ' seconds' + "\n\nChat Model Response Time: " + str(round(chat_model_response_time, 2)) + ' seconds'
-
-    # Return response
-    return response_for_user
+    # Return prompt and metadata
+    return constructed_prompt, documents_cited, milvus_query_time
