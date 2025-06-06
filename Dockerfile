@@ -29,6 +29,6 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 # Streamlit run command for app.py
 # Use executable
-ENTRYPOINT ["/.local/bin/streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["/.local/bin/streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.enableCORS=true"]
 # # keep container running
 # ENTRYPOINT ["sh", "-c", "while true; do sleep 1; done"]
