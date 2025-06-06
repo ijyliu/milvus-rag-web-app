@@ -19,8 +19,8 @@ import pandas as pd
 # Read environment variable "ENVIRONMENT"
 environment = os.getenv("ENVIRONMENT", "non-production")
 if environment == "production":
-    chat_model_url = "https://localhost:3000"
-    embedding_model_url = "https://localhost:5000/api/embeddings"
+    chat_model_url = "http://localhost:3000"
+    embedding_model_url = "http://localhost:5000/api/embeddings"
 else:
     chat_model_url = "http://host.docker.internal:3000"
     embedding_model_url = "http://host.docker.internal:5000/api/embeddings"
