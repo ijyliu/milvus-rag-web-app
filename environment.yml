@@ -217,5 +217,6 @@ dependencies:
     - langchain-community==0.3.24
     - ollama==0.4.8
     - pymilvus==2.5.8
+    - tqdm==4.67.1
 
 prefix: "C:\\Users\\ijyli\\.local\\share\\mamba\\envs\\milvus-rag-web-app"
