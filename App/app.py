@@ -101,7 +101,7 @@ You can search the table below to get a sense of what documents might be drawn u
 ''')
 
 # Pandas dataframe in doc_df.csv
-doc_df = pd.read_csv(os.path.expanduser('doc_df.csv'))
+doc_df = pd.read_csv(os.path.expanduser('doc_df_gemini_clean.csv'))
 st.dataframe(
              data = doc_df,
              height = 150,
